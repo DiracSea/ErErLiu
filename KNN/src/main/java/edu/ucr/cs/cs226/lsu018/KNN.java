@@ -1,8 +1,6 @@
 package edu.ucr.cs.cs226.lsu018;
 
 // hadoop
-import jdk.nashorn.internal.runtime.regexp.joni.exception.InternalException;
-import org.apache.avro.generic.GenericData;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -25,16 +23,16 @@ import java.util.*;
 
 public class KNN {
 
-    public static class MapKNN extends Mapper<LongWritable, Text, LongWritable, DoubleWritable> {
+    public static class MapKNN extends Mapper<LongWritable, Text, Text, FloatWritable> {
         /*
         * <key, value>
         * input: <id, pair>
         * output: <id, distance>
         * */
 
-        private double x, y;
-        private LongWritable id = new LongWritable();
-        private DoubleWritable dist = new DoubleWritable();
+        private float x, y;
+        private Text id = new Text();
+        private FloatWritable dist = new FloatWritable();
 
 //        @Override
 //        public void setup(Context context) throws IOException{
@@ -55,33 +53,83 @@ public class KNN {
 //            FileSplit fileSplit = (FileSplit) context.getInputSplit();
 //            String fileName = fileSplit.getPath().getName();
             Configuration conf = context.getConfiguration();
-            x = Double.valueOf(conf.get("x"));
-            y = Double.valueOf(conf.get("y"));
+            x = Float.valueOf(conf.get("x"));
+            y = Float.valueOf(conf.get("y"));
 
             String[] point = value.toString().split(",");
             // System.out.println(point); 
             dist.set(Euclidean_Dist(point[1]+","+point[2]));
-            id.set(Long.valueOf(point[0]));
+            id.set(point[0]);
 
             context.write(id, dist);
         }
 
-        public double Euclidean_Dist(String point) {
+        public float Euclidean_Dist(String point) {
             String[] ab = point.split(",");
-            double a = Double.valueOf(ab[0]);
-            double b = Double.valueOf(ab[1]);
+            float a = Float.valueOf(ab[0]);
+            float b = Float.valueOf(ab[1]);
             return Math.sqrt((a-x)*(a-x) + (b-y)*(b-y));
         }
     }
 
-    public static class ReduceKNN extends Reducer<LongWritable, DoubleWritable, LongWritable, NullWritable> {
+    // Combiner
+    public static class CombineKNN extends Reducer<Text, FloatWritable, Text, FloatWritable> {
+        private int k;
+        private Text id = new Text();
+        private FloatWritable dist = new FloatWritable(); 
+        private MaxHeap<Pair> maxHeap = new MaxHeap<KNN.Pair>(1);
+
+        @Override
+        public void reduce(Text key, Iterable<FloatWritable> values, Context context) throws IOException, InterruptedException{
+            Configuration conf = context.getConfiguration();
+            k = Integer.valueOf(conf.get("k"));
+
+            float sum = 0.0;
+            int num = 0;
+            for (FloatWritable value : values) {
+                sum += value.get();
+                num += 1;
+            }
+            String k = key.toString();
+            float v = sum/num;
+            Pair p = new Pair(k, v);
+
+            if (maxHeap.size() == k) {
+                if (maxHeap.findMax().compareTo(p) > 0) {
+                    maxHeap.replace(p); 
+                }
+            }
+            else if (maxHeap.size() < k) {
+                maxHeap.add(p);
+            }
+            // System.out.println(maxHeap.findMax().getValue()); 
+            else if (maxHeap.size() > k) {
+                maxHeap.popMax();
+            }
+        }
+
+        @Override
+        public void cleanup(Context context) throws IOException, InterruptedException {
+//            Configuration conf = context.getConfiguration();
+//            k = Integer.valueOf(conf.get("k"));
+            for (Object o : maxHeap) {
+                Pair p = (Pair) o;
+                id.set(p.getKey());
+                dist.set(p.getValue()); 
+                context.write(id, dist);
+            }
+
+        }
+    }
+
+    public static class ReduceKNN extends Reducer<Text, FloatWritable, Text, NullWritable> {
         /*
          * <key, value>
          * input: <id, distance>
          * output: <id, null>
          * */
         private int k;
-        private LongWritable id = new LongWritable();
+        private Text id = new Text();
         // private ArrayList<Pair> list = new ArrayList<Pair>();
         private MaxHeap<Pair> maxHeap = new MaxHeap<KNN.Pair>(1);
 
@@ -91,20 +139,20 @@ public class KNN {
 //        }
 
         @Override
-        public void reduce(LongWritable key, Iterable<DoubleWritable> values, Context context)
+        public void reduce(Text key, Iterable<FloatWritable> values, Context context)
                 throws IOException, InterruptedException {
             Configuration conf = context.getConfiguration();
             k = Integer.valueOf(conf.get("k"));
             
 
-            double sum = 0.0;
+            float sum = 0.0;
             int num = 0;
-            for (DoubleWritable value : values) {
+            for (FloatWritable value : values) {
                 sum += value.get();
                 num += 1;
             }
-            long k = key.get();
-            double v = sum/num;
+            String k = key.toString();
+            float v = sum/num;
             Pair p = new Pair(k, v);
 
             if (maxHeap.size() == k) {
@@ -137,19 +185,19 @@ public class KNN {
 
     public static class Pair implements Comparable<Pair>{
         // Key, Dist
-        private long key;
-        private double value;
+        private String key;
+        private float value;
 
-        public Pair(long key, double value) {
+        public Pair(String key, float value) {
             this.key=key;
             this.value=value;
         }
 
-        public double getValue() {
+        public float getValue() {
             return value;
         }
 
-        public long getKey() {
+        public String getKey() {
             return key;
         }
 
@@ -298,6 +346,7 @@ public class KNN {
 //        ReduceKNN r = new ReduceKNN();
 //        r.setK(Integer.valueOf(args[1]));
 
+        // configuration
         Configuration conf = new Configuration();
         conf.set("mapred.reduce.child.java.opts", "-Xmx2048m"); 
 
@@ -305,36 +354,47 @@ public class KNN {
         conf.set("x", args[2]);
         conf.set("y", args[3]);
 
+        // job
         Job job = Job.getInstance(conf, "Read a File");
+        job.setJarByClass(KNN.class);
+
+        // filesystem 
         FileSystem fs = FileSystem.get(conf);
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(IntWritable.class);
         if (fs.exists(new Path(args[4])))
             fs.delete(new Path(args[4]), true);
-        job.setMapperClass(KNN.MapKNN.class);
-        job.setReducerClass(KNN.ReduceKNN.class);
 
+        // method
+        job.setMapperClass(KNN.MapKNN.class);
+        job.setCombinerClass(KNN.CombineKNN.class); 
+        job.setReducerClass(KNN.ReduceKNN.class);
+        
+        // io file format
         job.setInputFormatClass(TextInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);
 
+        // map
         /*
         * <key, value>
         * input: <id, pair>
         * output: <id, distance>
         * */
-        job.setMapOutputKeyClass(LongWritable.class);
-        job.setMapOutputValueClass(DoubleWritable.class);
+        job.setMapOutputKeyClass(Text.class);
+        job.setMapOutputValueClass(FloatWritable.class);
+
+        // reduce
         /*
          * <key, value>
          * input: <id, distance>
          * output: <id, null>
          * */
-        job.setOutputKeyClass(LongWritable.class);
+        job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(NullWritable.class);
 
+        // file
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[4]));
-        job.setJarByClass(KNN.class);
+
+        // file2cluster
         job.waitForCompletion(true);
     }
 }
