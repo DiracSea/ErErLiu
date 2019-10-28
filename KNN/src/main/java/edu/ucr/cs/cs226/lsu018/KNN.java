@@ -59,6 +59,7 @@ public class KNN {
             y = Double.valueOf(conf.get("y"));
 
             String point = value.toString();
+            System.out.println(point); // 
             dist.set(Euclidean_Dist(point));
             id.set(key.get());
 
