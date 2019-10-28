@@ -299,7 +299,7 @@ public class KNN {
 //        r.setK(Integer.valueOf(args[1]));
 
         Configuration conf = new Configuration();
-        conf.set("mapred.reduce.child.java.opts", "-Xmx512m"); 
+        conf.set("mapred.reduce.child.java.opts", "-Xmx2048m"); 
 
         conf.set("k", args[1]);
         conf.set("x", args[2]);
