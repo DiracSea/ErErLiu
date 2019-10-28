@@ -90,9 +90,9 @@ public class KNN {
                 sum += value.get();
                 num += 1;
             }
-            String k = key.toString();
+            String kkk = key.toString();
             float v = sum/num;
-            Pair p = new Pair(k, v);
+            Pair p = new Pair(kkk, v);
 
             if (maxHeap.size() == k) {
                 if (maxHeap.findMax().compareTo(p) > 0) {
@@ -151,9 +151,9 @@ public class KNN {
                 sum += value.get();
                 num += 1;
             }
-            String k = key.toString();
+            String kkk = key.toString();
             float v = sum/num;
-            Pair p = new Pair(k, v);
+            Pair p = new Pair(kkk, v);
 
             if (maxHeap.size() == k) {
                 if (maxHeap.findMax().compareTo(p) > 0) {
