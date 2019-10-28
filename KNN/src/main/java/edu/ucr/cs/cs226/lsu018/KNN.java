@@ -23,16 +23,16 @@ import java.util.*;
 
 public class KNN {
 
-    public static class MapKNN extends Mapper<LongWritable, Text, Text, FloatWritable> {
+    public static class MapKNN extends Mapper<LongWritable, Text, Text, DoubleWritable> {
         /*
         * <key, value>
         * input: <id, pair>
         * output: <id, distance>
         * */
 
-        private float x, y;
+        private double x, y;
         private Text id = new Text();
-        private FloatWritable dist = new FloatWritable();
+        private DoubleWritable dist = new DoubleWritable();
 
 //        @Override
 //        public void setup(Context context) throws IOException{
@@ -53,8 +53,8 @@ public class KNN {
 //            FileSplit fileSplit = (FileSplit) context.getInputSplit();
 //            String fileName = fileSplit.getPath().getName();
             Configuration conf = context.getConfiguration();
-            x = Float.valueOf(conf.get("x"));
-            y = Float.valueOf(conf.get("y"));
+            x = Double.valueOf(conf.get("x"));
+            y = Double.valueOf(conf.get("y"));
 
             String[] point = value.toString().split(",");
             // System.out.println(point); 
@@ -64,34 +64,34 @@ public class KNN {
             context.write(id, dist);
         }
 
-        public float Euclidean_Dist(String point) {
+        public double Euclidean_Dist(String point) {
             String[] ab = point.split(",");
-            float a = Float.valueOf(ab[0]);
-            float b = Float.valueOf(ab[1]);
+            double a = Double.valueOf(ab[0]);
+            double b = Double.valueOf(ab[1]);
             return Math.sqrt((a-x)*(a-x) + (b-y)*(b-y));
         }
     }
 
     // Combiner
-    public static class CombineKNN extends Reducer<Text, FloatWritable, Text, FloatWritable> {
+    public static class CombineKNN extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
         private int k;
         private Text id = new Text();
-        private FloatWritable dist = new FloatWritable(); 
+        private DoubleWritable dist = new DoubleWritable(); 
         private MaxHeap<Pair> maxHeap = new MaxHeap<KNN.Pair>(1);
 
         @Override
-        public void reduce(Text key, Iterable<FloatWritable> values, Context context) throws IOException, InterruptedException{
+        public void reduce(Text key, Iterable<DoubleWritable> values, Context context) throws IOException, InterruptedException{
             Configuration conf = context.getConfiguration();
             k = Integer.valueOf(conf.get("k"));
 
-            float sum = 0.0;
+            double sum = 0.0;
             int num = 0;
-            for (FloatWritable value : values) {
+            for (DoubleWritable value : values) {
                 sum += value.get();
                 num += 1;
             }
             String kkk = key.toString();
-            float v = sum/num;
+            double v = sum/num;
             Pair p = new Pair(kkk, v);
 
             if (maxHeap.size() == k) {
@@ -122,7 +122,7 @@ public class KNN {
         }
     }
 
-    public static class ReduceKNN extends Reducer<Text, FloatWritable, Text, NullWritable> {
+    public static class ReduceKNN extends Reducer<Text, DoubleWritable, Text, NullWritable> {
         /*
          * <key, value>
          * input: <id, distance>
@@ -139,20 +139,20 @@ public class KNN {
 //        }
 
         @Override
-        public void reduce(Text key, Iterable<FloatWritable> values, Context context)
+        public void reduce(Text key, Iterable<DoubleWritable> values, Context context)
                 throws IOException, InterruptedException {
             Configuration conf = context.getConfiguration();
             k = Integer.valueOf(conf.get("k"));
             
 
-            float sum = 0.0;
+            double sum = 0.0;
             int num = 0;
-            for (FloatWritable value : values) {
+            for (DoubleWritable value : values) {
                 sum += value.get();
                 num += 1;
             }
             String kkk = key.toString();
-            float v = sum/num;
+            double v = sum/num;
             Pair p = new Pair(kkk, v);
 
             if (maxHeap.size() == k) {
@@ -186,14 +186,14 @@ public class KNN {
     public static class Pair implements Comparable<Pair>{
         // Key, Dist
         private String key;
-        private float value;
+        private double value;
 
-        public Pair(String key, float value) {
+        public Pair(String key, double value) {
             this.key=key;
             this.value=value;
         }
 
-        public float getValue() {
+        public double getValue() {
             return value;
         }
 
@@ -379,7 +379,7 @@ public class KNN {
         * output: <id, distance>
         * */
         job.setMapOutputKeyClass(Text.class);
-        job.setMapOutputValueClass(FloatWritable.class);
+        job.setMapOutputValueClass(DoubleWritable.class);
 
         // reduce
         /*
