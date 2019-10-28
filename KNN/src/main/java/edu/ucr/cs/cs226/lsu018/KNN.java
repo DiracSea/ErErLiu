@@ -309,6 +309,21 @@ public class KNN {
         job.setInputFormatClass(TextInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);
 
+        /*
+        * <key, value>
+        * input: <id, pair>
+        * output: <id, distance>
+        * */
+        job.setMapOutputKeyClass(LongWritable.class);
+        job.setMapOutputValueClass(DoubleWritable.class);
+        /*
+         * <key, value>
+         * input: <id, distance>
+         * output: <id, null>
+         * */
+        job.setOutputKeyClass(LongWritable.class);
+        job.setOutputValueClass(NullWritable.class);
+
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[4]));
         job.setJarByClass(KNN.class);
