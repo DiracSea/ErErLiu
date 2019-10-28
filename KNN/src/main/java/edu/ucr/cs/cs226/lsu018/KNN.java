@@ -107,9 +107,16 @@ public class KNN {
             double v = sum/num;
             Pair p = new Pair(k, v);
 
-            maxHeap.add(p);
-            // System.out.println(maxHeap.findMax().getValue()); 
             if (maxHeap.size() == k) {
+                if (maxHeap.findMax().compareTo(p) > 0) {
+                    maxHeap.replace(p); 
+                }
+            }
+            else if (maxHeap.size() < k) {
+                maxHeap.add(p);
+            }
+            // System.out.println(maxHeap.findMax().getValue()); 
+            else if (maxHeap.size() > k) {
                 maxHeap.popMax();
             }
         }
@@ -262,11 +269,9 @@ public class KNN {
             return ret;
         }
 
-        public Pair popMax () {
-            Pair ret = data.get(0);
+        public void popMax () {
             data.remove(0);
             siftDown(0);
-            return ret;
         }
 
         private void swap (int i, int j) {
@@ -294,6 +299,7 @@ public class KNN {
 //        r.setK(Integer.valueOf(args[1]));
 
         Configuration conf = new Configuration();
+        conf.set("mapred.reduce.child.java.opts", "-Xmx512m"); 
 
         conf.set("k", args[1]);
         conf.set("x", args[2]);
