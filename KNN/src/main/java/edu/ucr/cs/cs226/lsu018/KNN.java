@@ -107,6 +107,7 @@ public class KNN {
             Pair p = new Pair(k, v);
 
             maxHeap.add(p);
+            System.out.println(maxHeap.findMax().getValue()); 
             if (maxHeap.size() == k) {
                 maxHeap.popMax();
             }
