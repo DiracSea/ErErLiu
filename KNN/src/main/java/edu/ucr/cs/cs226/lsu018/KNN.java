@@ -83,7 +83,7 @@ public class KNN {
         private int k;
         private LongWritable id = new LongWritable();
         // private ArrayList<Pair> list = new ArrayList<Pair>();
-        private MaxHeap<Pair> maxHeap = null;
+        private MaxHeap<Pair> maxHeap = new MaxHeap<KNN.Pair>(1);
 
 //        @Override
 //        public void setup(Context context) throws IOException, InternalException {
@@ -95,6 +95,7 @@ public class KNN {
                 throws IOException, InterruptedException {
             Configuration conf = context.getConfiguration();
             k = Integer.valueOf(conf.get("k"));
+            
 
             double sum = 0.0;
             int num = 0;
