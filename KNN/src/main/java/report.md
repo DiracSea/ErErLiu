@@ -1,11 +1,23 @@
 # CS226 Assignment 2: MapReduce
 1. Which InputFormat did you use in the MapReduce program?
 
+
 2. What is the input and output format of the map function?
+Input: Text, DoubleWritable
+
+Output: Text, DoubleWritable
 
 3. What is the logic of the map function?
 
-4. If a combiner function is used, what is the signature of the combiner function (input and
+Read one line as point. 
+The line number is Key LongWritable:key.
+The Value is Text: value.  
+Extract information from input and split it by "," 
+The First one is Index, its type is String
+The Second one and Third one are x and y. 
+Calculate each distance between q and p_i 
+
+1. If a combiner function is used, what is the signature of the combiner function (input and
 output) and what is its logic?
 
 5. If a reduce function is used, what is the signature of the reduce function (input and
