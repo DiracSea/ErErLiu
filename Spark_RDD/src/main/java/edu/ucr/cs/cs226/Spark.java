@@ -76,19 +76,20 @@ public class Spark {
         JavaPairRDD<String, String> table = in
                 .mapToPair(s -> new Tuple2<>(s.split("\t")[0]+s.split("\t")[4],s));
         // join
-        JavaPairRDD<String, Tuple2<URL, URL>> pair = table
+        JavaPairRDD<String, Tuple2<String[], String[]>> pair = table
                 .join(table)
                 .mapToPair(s -> new Tuple2<String, Tuple2<String, String>>(s._2._1+"\t"+s._2._2, s._2))
         // serializabale
                 .mapValues(s -> new Tuple2<>(s._1.split("\t"),s._2.split("\t")))
-                .mapValues(s -> new Tuple2<>(new URL(s._1[0],s._1[4],Long.valueOf(s._1[2])), new URL(s._2[0],s._2[4],Long.valueOf(s._2[2]))))
+                // .mapValues(s -> new Tuple2<>(new URL(s._1[0],s._1[4],Long.valueOf(s._1[2])), new URL(s._2[0],s._2[4],Long.valueOf(s._2[2]))))
         // filter
-                .filter(new Function<Tuple2<String, Tuple2<URL, URL>>, Boolean>() {
+                .filter(new Function<Tuple2<String, Tuple2<String[], String[]>>, Boolean>() {
                     @Override
-                    public Boolean call(Tuple2<String, Tuple2<URL, URL>> tmp) throws Exception {
+                    public Boolean call(Tuple2<String, Tuple2<String[], String[]>> tmp) throws Exception {
                         // 0 < t1 - t2 <= 3600; h1 == h2; u1 == u2
-                        if ((tmp._2._1.T() - tmp._2._2.T() > 0 && tmp._2._1.T() - tmp._2._2.T() <= 3600) && 
-                        (tmp._2._1.H() == tmp._2._2.H() && tmp._2._1.U() == tmp._2._2.U())){
+                        if ((Long.valueOf(tmp._2._1[2]) - Long.valueOf(tmp._2._2[2]) > 0 && 
+                        Long.valueOf(tmp._2._1[2]) - Long.valueOf(tmp._2._2[2]) <= 3600) && 
+                        (tmp._2._1[0] == tmp._2._2[0] && tmp._2._1[4] == tmp._2._2[4])){
                             return true;
                         }
                         return false;
