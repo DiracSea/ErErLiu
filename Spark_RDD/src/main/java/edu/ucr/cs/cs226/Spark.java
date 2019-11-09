@@ -7,7 +7,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import scala.Tuple2;
 
-import java.io.*;
+
 
 
 public class Spark {
@@ -33,38 +33,12 @@ public class Spark {
                 .mapValues(x -> new Tuple2<>(x, 1))
                 .reduceByKey((x, y) -> new Tuple2<>(x._1 + y._1, x._2 + y._2)) // x 1st element, y 2nd element
                 .mapValues(x -> Double.valueOf(x._1)/x._2);
+        
+        JavaRDD<String> ave = averagePair
+                .map(data -> "Code "+data._1 + ", average number of bytes = " + data._2);
 
-        //print averageByKey
-        File file;
-        FileOutputStream fos = null;
-        try {
-            file = new File(output);
-            if (!file.exists()) {
-                file.createNewFile();
-            }
-
-            fos = new FileOutputStream(file);
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
-
-            averagePair.foreach(data -> {
-                // System.out.println("Key="+data._1() + " Average=" + data._2());
-                bw.write("Code "+data._1() + ", average number of bytes = " + data._2());
-                bw.newLine();
-            });
-
-            fos.flush();
-            fos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (fos != null) {
-                    fos.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        //print averageByKey ("Code "+data._1() + ", average number of bytes = " + data._2());
+        ave.saveAsTextFile(output);
 
         //stop sc
         sc.stop();
@@ -98,37 +72,10 @@ public class Spark {
                         return false;
                     }
                 });
+        JavaRDD<String> outFile = pair
+                .map(s -> s._1);
         //print
-        File file;
-        FileOutputStream fos = null;
-        try {
-            file = new File(output);
-            if (!file.exists()) {
-                file.createNewFile();
-            }
-
-            fos = new FileOutputStream(file);
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
-
-            pair.foreach(data -> {
-                // System.out.println("Key="+data._1() + " Average=" + data._2());
-                bw.write(data._1);
-                bw.newLine();
-            });
-
-            fos.flush();
-            fos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (fos != null) {
-                    fos.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        outFile.saveAsTextFile(output);
 
         //stop sc
         sc.stop();
