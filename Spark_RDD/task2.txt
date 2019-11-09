@@ -1,25 +1,3 @@
-# SparkRDD
-
-## run
-
-args[0] = "/data/input/nasa.tsv"; args[1] = output1; args[2] = output2; 
-
-spark-submit --class edu.ucr.cs.cs226.Spark target/lsu018-1.0-SNAPSHOT.jar /data/input/nasa.tsv /data/output/task1 /data/output/task2
-
-## result
-
-### output1
-
-Code 302, average number of bytes = 73.54901960784314
-
-Code 304, average number of bytes = 0.0
-
-Code 404, average number of bytes = 0.0
-
-Code 200, average number of bytes = 22848.716743119265
-
-### output2
-
 isdn6-34.dnai.com	-	804571420	GET	/shuttle/missions/sts-68/mission-sts-68.html	200	49087			isdn6-34.dnai.com	-	804571411	GET	/shuttle/missions/sts-68/mission-sts-68.html	200	49087		
 port2.electrotex.com	-	804571537	GET	/shuttle/countdown/video/livevideo.jpeg	200	43974			port2.electrotex.com	-	804571431	GET	/shuttle/countdown/video/livevideo.jpeg	200	44467		
 166.79.67.111	-	804572000	GET	/images/KSC-logosmall.gif	304	0			166.79.67.111	-	804571701	GET	/images/KSC-logosmall.gif	200	1204		
