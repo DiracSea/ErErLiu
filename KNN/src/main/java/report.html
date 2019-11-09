@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-alpha/dist/katex.min.css" integrity="sha384-BTL0nVi8DnMrNdMQZG1Ww6yasK9ZGnUxL1ZWukXQ7fygA1py52yPp9W4wrR00VML" crossorigin="anonymous">
+        <style>
+/*--------------------------------------------------------------------------------------------- * Copyright (c) Microsoft Corporation. All rights reserved. * Licensed under the MIT License. See License.txt in the project root for license information. *--------------------------------------------------------------------------------------------*/ body { font-family: "Segoe WPC", "Segoe UI", "SFUIText-Light", "HelveticaNeue-Light", sans-serif, "Droid Sans Fallback"; font-size: 14px; padding: 0 26px; line-height: 22px; word-wrap: break-word; } #code-csp-warning { position: fixed; top: 0; right: 0; color: white; margin: 16px; text-align: center; font-size: 12px; font-family: sans-serif; background-color:#444444; cursor: pointer; padding: 6px; box-shadow: 1px 1px 1px rgba(0,0,0,.25); } #code-csp-warning:hover { text-decoration: none; background-color:#007acc; box-shadow: 2px 2px 2px rgba(0,0,0,.25); } body.scrollBeyondLastLine { margin-bottom: calc(100vh - 22px); } body.showEditorSelection .code-line { position: relative; } body.showEditorSelection .code-active-line:before, body.showEditorSelection .code-line:hover:before { content: ""; display: block; position: absolute; top: 0; left: -12px; height: 100%; } body.showEditorSelection li.code-active-line:before, body.showEditorSelection li.code-line:hover:before { left: -30px; } .vscode-light.showEditorSelection .code-active-line:before { border-left: 3px solid rgba(0, 0, 0, 0.15); } .vscode-light.showEditorSelection .code-line:hover:before { border-left: 3px solid rgba(0, 0, 0, 0.40); } .vscode-light.showEditorSelection .code-line .code-line:hover:before { border-left: none; } .vscode-dark.showEditorSelection .code-active-line:before { border-left: 3px solid rgba(255, 255, 255, 0.4); } .vscode-dark.showEditorSelection .code-line:hover:before { border-left: 3px solid rgba(255, 255, 255, 0.60); } .vscode-dark.showEditorSelection .code-line .code-line:hover:before { border-left: none; } .vscode-high-contrast.showEditorSelection .code-active-line:before { border-left: 3px solid rgba(255, 160, 0, 0.7); } .vscode-high-contrast.showEditorSelection .code-line:hover:before { border-left: 3px solid rgba(255, 160, 0, 1); } .vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before { border-left: none; } img { max-width: 100%; max-height: 100%; } a { text-decoration: none; } a:hover { text-decoration: underline; } a:focus, input:focus, select:focus, textarea:focus { outline: 1px solid -webkit-focus-ring-color; outline-offset: -1px; } hr { border: 0; height: 2px; border-bottom: 2px solid; } h1 { padding-bottom: 0.3em; line-height: 1.2; border-bottom-width: 1px; border-bottom-style: solid; } h1, h2, h3 { font-weight: normal; } h1 code, h2 code, h3 code, h4 code, h5 code, h6 code { font-size: inherit; line-height: auto; } table { border-collapse: collapse; } table > thead > tr > th { text-align: left; border-bottom: 1px solid; } table > thead > tr > th, table > thead > tr > td, table > tbody > tr > th, table > tbody > tr > td { padding: 5px 10px; } table > tbody > tr + tr > td { border-top: 1px solid; } blockquote { margin: 0 7px 0 5px; padding: 0 16px 0 10px; border-left-width: 5px; border-left-style: solid; } code { font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback"; font-size: 14px; line-height: 19px; } body.wordWrap pre { white-space: pre-wrap; } .mac code { font-size: 12px; line-height: 18px; } pre:not(.hljs), pre.hljs code > div { padding: 16px; border-radius: 3px; overflow: auto; } /** Theming */ pre code { color: var(--vscode-editor-foreground); } .vscode-light pre:not(.hljs), .vscode-light code > div { background-color: rgba(220, 220, 220, 0.4); } .vscode-dark pre:not(.hljs), .vscode-dark code > div { background-color: rgba(10, 10, 10, 0.4); } .vscode-high-contrast pre:not(.hljs), .vscode-high-contrast code > div { background-color: rgb(0, 0, 0); } .vscode-high-contrast h1 { border-color: rgb(0, 0, 0); } .vscode-light table > thead > tr > th { border-color: rgba(0, 0, 0, 0.69); } .vscode-dark table > thead > tr > th { border-color: rgba(255, 255, 255, 0.69); } .vscode-light h1, .vscode-light hr, .vscode-light table > tbody > tr + tr > td { border-color: rgba(0, 0, 0, 0.18); } .vscode-dark h1, .vscode-dark hr, .vscode-dark table > tbody > tr + tr > td { border-color: rgba(255, 255, 255, 0.18); } 
+</style>
+<style>
+/* Tomorrow Theme */ /* http://jmblog.github.com/color-themes-for-google-code-highlightjs */ /* Original theme - https://github.com/chriskempson/tomorrow-theme */ /* Tomorrow Comment */ .hljs-comment, .hljs-quote { color: #8e908c; } /* Tomorrow Red */ .hljs-variable, .hljs-template-variable, .hljs-tag, .hljs-name, .hljs-selector-id, .hljs-selector-class, .hljs-regexp, .hljs-deletion { color: #c82829; } /* Tomorrow Orange */ .hljs-number, .hljs-built_in, .hljs-builtin-name, .hljs-literal, .hljs-type, .hljs-params, .hljs-meta, .hljs-link { color: #f5871f; } /* Tomorrow Yellow */ .hljs-attribute { color: #eab700; } /* Tomorrow Green */ .hljs-string, .hljs-symbol, .hljs-bullet, .hljs-addition { color: #718c00; } /* Tomorrow Blue */ .hljs-title, .hljs-section { color: #4271ae; } /* Tomorrow Purple */ .hljs-keyword, .hljs-selector-tag { color: #8959a8; } .hljs { display: block; overflow-x: auto; color: #4d4d4c; padding: 0.5em; } .hljs-emphasis { font-style: italic; } .hljs-strong { font-weight: bold; }
+</style>
+<style>
+.task-list-item { list-style-type: none; } .task-list-item-checkbox { margin-left: -20px; vertical-align: middle; }
+</style>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', 'HelveticaNeue-Light', 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+    </head>
+    <body>
+        <h1 id="cs226-assignment-2-mapreduce">CS226 Assignment 2: MapReduce</h1>
+<p>Name: Longze Su SID: 862188702</p>
+<ol>
+<li>Which InputFormat did you use in the MapReduce program?</li>
+</ol>
+<p>job.setInputFormatClass(TextInputFormat.class);
+job.setOutputFormatClass(TextOutputFormat.class);</p>
+<ol start="2">
+<li>What is the input and output format of the map function?</li>
+</ol>
+<p>Input: Text, DoubleWritable</p>
+<p>Output: Text, DoubleWritable</p>
+<ol start="3">
+<li>What is the logic of the map function?</li>
+</ol>
+<p>Read one line as point.
+The line number is input Key LongWritable:key.
+The input Value is Text: value.<br>
+Extract information from input Value and split it by &quot;,&quot;
+The First one is Output Key, its type is String
+The Second one and Third one are x and y.
+Calculate each distance between q and point_i, set it as Output Value.</p>
+<ol start="4">
+<li>If a combiner function is used, what is the signature of the combiner function (input and
+output) and what is its logic?</li>
+</ol>
+<p>Input: Text, DoubleWritable
+Output: Text, DoubleWritable</p>
+<p>For input data, store self-define datatype Pair&lt;String: key, double: value&gt;, and store them into a MaxHeap, the max size of MaxHeap is k, when element over the size, compare it with the top element of MaxHeap, if smaller, then add it to the MaxHeap. Output all the element in the MaxHeap.</p>
+<ol start="5">
+<li>If a reduce function is used, what is the signature of the reduce function (input and
+output) and what is its logic?</li>
+</ol>
+<p>Input: Text, DoubleWritable
+Output: Text, NullWritable</p>
+<p>The similar method as the combiner method, for input data, store self-define datatype Pair&lt;String: key, double: value&gt;, and store them into a MaxHeap, the max size of MaxHeap is k, when element over the size, compare it with the top element of MaxHeap, if smaller, then add it to the MaxHeap. Output all the key of element in the MaxHeap.</p>
+<ol start="6">
+<li>How many mappers and reducers are needed for your program?</li>
+</ol>
+<p>mapper: 4, reducer: 1</p>
+<ol start="7">
+<li>How many records are shuffled between the mappers and reducers?</li>
+</ol>
+<p>700</p>
+<h3 id="result">Result</h3>
+<pre><code>   File System Counters
+            FILE: Number of bytes read=181767
+            FILE: Number of bytes written=2858872
+            FILE: Number of read operations=0
+            FILE: Number of large read operations=0
+            FILE: Number of write operations=0
+            HDFS: Number of bytes read=1695230884
+            HDFS: Number of bytes written=1900
+            HDFS: Number of read operations=53
+            HDFS: Number of large read operations=0
+            HDFS: Number of write operations=12
+            HDFS: Number of bytes read erasure-coded=0
+    Map-Reduce Framework
+            Map input records=10507403
+            Map output records=10507403
+            Map output bytes=283699881
+            Map output materialized bytes=20324
+            Input split bytes=396
+            Combine input records=10507403
+            Combine output records=700
+            Reduce input groups=700
+            Reduce shuffle bytes=20324
+            Reduce input records=700
+            Reduce output records=100
+            Spilled Records=2000
+            Shuffled Maps =4
+            Failed Shuffles=0
+            Merged Map outputs=4
+            GC time elapsed (ms)=408
+            Total committed heap usage (bytes)=1022877696
+    Shuffle Errors
+            BAD_ID=0
+            CONNECTION=0
+            IO_ERROR=0
+            WRONG_LENGTH=0
+            WRONG_MAP=0
+            WRONG_REDUCE=0
+    File Input Format Counters
+            Bytes Read=444949970
+    File Output Format Counters
+            Bytes Written=1900
+</code></pre>
+
+    </body>
+    </html>
