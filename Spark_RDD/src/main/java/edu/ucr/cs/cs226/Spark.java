@@ -1,5 +1,7 @@
 package edu.ucr.cs.cs226;
 
+import java.io.Serializable;
+
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -45,8 +47,28 @@ public class Spark {
         sc.close();
     }
 
+    public class URL implements Serializable {
+        private String url;
+        private String host; 
+        private long time; 
 
+        public URL (String s1, String s2, long t) {
+            url = s1; 
+            host = s2; 
+            time = t; 
+        }
+        public String U() {
+            return url;
+        }
+        public String H() {
+            return host; 
+        }
+        public long T() {
+            return time; 
+        }
+    }
     public void findPair(String input, String output) {
+        // host 0; - 1; timestamp 2; ins 3; url 4; code 5; bytes 6
         JavaSparkContext sc = new JavaSparkContext(new SparkConf());
         JavaRDD<String> in = sc.textFile(input);
 
@@ -54,19 +76,19 @@ public class Spark {
         JavaPairRDD<String, String> table = in
                 .mapToPair(s -> new Tuple2<>(s.split("\t")[0]+s.split("\t")[4],s));
         // join
-        JavaPairRDD<String, Tuple2<String, String>> pair = table
+        JavaPairRDD<String, Tuple2<URL, URL>> pair = table
                 .join(table)
                 .mapToPair(s -> new Tuple2<String, Tuple2<String, String>>(s._2._1+"\t"+s._2._2, s._2))
+        // serializabale
+                .mapValues(s -> new Tuple2<>(s._1.split("\t"),s._2.split("\t")))
+                .mapValues(s -> new Tuple2<>(new URL(s._1[0],s._1[4],Long.valueOf(s._1[2])), new URL(s._2[0],s._2[4],Long.valueOf(s._2[2]))))
         // filter
-                .filter(new Function<Tuple2<String, Tuple2<String, String>>, Boolean>() {
-                    public Boolean call(Tuple2<String, Tuple2<String, String>> tmp) throws Exception {
-                        String[] tmp1 = tmp._2._1.split("\t");
-                        String[] tmp2 = tmp._2._2.split("\t");
-                        String host1 = tmp1[0], host2 = tmp2[0];
-                        String url1 = tmp1[4], url2 = tmp2[4];
-                        long time1 = Long.valueOf(tmp1[2]), time2 = Long.valueOf(tmp2[2]);
-
-                        if ((time1 - time2 >= 0 && tmp1 != tmp2) && time1 - time2 <= 3600 && host1 == host2 && url1 == url2){
+                .filter(new Function<Tuple2<String, Tuple2<URL, URL>>, Boolean>() {
+                    @Override
+                    public Boolean call(Tuple2<String, Tuple2<URL, URL>> tmp) throws Exception {
+                        // 0 < t1 - t2 <= 3600; h1 == h2; u1 == u2
+                        if ((tmp._2._1.T() - tmp._2._2.T() > 0 && tmp._2._1.T() - tmp._2._2.T() <= 3600) && 
+                        (tmp._2._1.H() == tmp._2._2.H() && tmp._2._1.U() == tmp._2._2.U())){
                             return true;
                         }
                         return false;
