@@ -111,7 +111,7 @@ public class Spark {
         */
         Spark s = new Spark();
         s.findAve(args[0], args[1]);
-        s.findPair(args[0], args[1]);
+        s.findPair(args[0], args[2]);
 
     }
 }
