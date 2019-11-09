@@ -74,6 +74,7 @@ public class Spark {
 
         // split
         JavaPairRDD<String, String> table = in
+        // combine URL and Host
                 .mapToPair(s -> new Tuple2<>(s.split("\t")[0]+s.split("\t")[4],s));
         // join
         JavaPairRDD<String, Tuple2<String[], String[]>> pair = table
@@ -89,8 +90,8 @@ public class Spark {
                     // public Boolean call(Tuple2<String, Tuple2<String[], String[]>> tmp) throws Exception {
                         // 0 < t1 - t2 <= 3600; h1 == h2; u1 == u2
                         tmp -> ((Long.valueOf(tmp._2._1[2]) - Long.valueOf(tmp._2._2[2]) > 0 && 
-                        Long.valueOf(tmp._2._1[2]) - Long.valueOf(tmp._2._2[2]) <= 3600) && 
-                        (tmp._2._1[0] == tmp._2._2[0] && tmp._2._1[4] == tmp._2._2[4]))
+                        Long.valueOf(tmp._2._1[2]) - Long.valueOf(tmp._2._2[2]) <= 3600))
+                        // (tmp._2._1[0] == tmp._2._2[0] && tmp._2._1[4] == tmp._2._2[4]))
                         );
         JavaRDD<String> outFile = pair
                 .map(s -> s._1);
