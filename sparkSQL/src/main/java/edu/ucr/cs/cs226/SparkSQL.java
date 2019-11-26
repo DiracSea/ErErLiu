@@ -49,7 +49,7 @@ public class SparkSQL {
         res.saveAsTextFile(output);
     }
 
-    public void findPair(String input, long t0, long t1) { // t0 < t1
+    public void findPair(String input, String output, long t0, long t1) { // t0 < t1
         SparkSession spark = SparkSession
                 .builder()
                 .appName("Java Spark SQL")
@@ -76,9 +76,13 @@ public class SparkSQL {
                 .load(input);
         // operation
         // host 0; - 1; timestamp 2; ins 3; url 4; code 5; bytes 6
-        Dataset<Row> res = df.select("time").filter("time>t0").filter("time<t1");
-        long time_count = df.count();
-        System.out.println("Number of time between t0 and t1 are "+time_count);
+        df.createOrReplaceTempView("visit");
+        // filter("time > t0 and time < t1");
+        Dataset<Row> a = df.sqlContext().sql("SELECT count(time) as t from visit where time > t0 and time < t1");
+        a.show(1);
+        // long time_count = df.count();
+        JavaRDD<String> res = a.toJavaRDD().map(s -> "Number of time between t0 and t1 are "+s.getAs("t").toString());
+        res.saveAsTextFile(output);
     }
     public static void main(String[] args) {
         // host 0; - 1; timestamp 2; ins 3; url 4; code 5; bytes 6
@@ -90,6 +94,6 @@ public class SparkSQL {
          */
         SparkSQL s = new SparkSQL();
         s.findAve(args[0], args[1]);
-        s.findPair(args[0], Long.parseLong(args[2]), Long.parseLong(args[3]));
+        s.findPair(args[0], args[2], Long.parseLong(args[3]), Long.parseLong(args[4]));
     }
 }
