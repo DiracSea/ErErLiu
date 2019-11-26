@@ -47,12 +47,11 @@ public class SparkSQL {
         // df.show(5);
         JavaRDD<String> res = avgBytes.toJavaRDD().map(s -> "Code " + s.getAs("code").toString() + ", average number of bytes = " + s.getAs("avg").toString());
         res.saveAsTextFile(output);
+        spark.close();
     }
 
-    public void findPair(String input, String output) { // t0 < t1
-        long t0 = 0, t1 = 804572208;
+    public void findPair(String input, String output, long t0, long t1) { // t0 < t1
         System.out.println((t0+t1)/2); // check input
-
         SparkSession spark = SparkSession
                 .builder()
                 .appName("Java Spark SQL")
@@ -80,12 +79,13 @@ public class SparkSQL {
         // operation
         // host 0; - 1; timestamp 2; ins 3; url 4; code 5; bytes 6
         df.createOrReplaceTempView("visit");
-        // filter("time > t0 and time < t1");
-        Dataset<Row> a = df.sqlContext().sql("SELECT count(time) as t from visit where time > t0 and time < t1");
+        // filter("time > "+t0+" and time < "+t1); alternative
+        Dataset<Row> a = df.sqlContext().sql("SELECT count(time) as t from visit where time > "+t0+" and time < "+t1);
         a.show(1);
-        // long time_count = df.count();
+        // long time_count = df.count(); alternative
         JavaRDD<String> res = a.toJavaRDD().map(s -> "Number of time between t0 and t1 are "+s.getAs("t").toString());
         res.saveAsTextFile(output);
+        spark.close();
     }
     public static void main(String[] args) {
         // host 0; - 1; timestamp 2; ins 3; url 4; code 5; bytes 6
@@ -97,6 +97,6 @@ public class SparkSQL {
          */
         SparkSQL s = new SparkSQL();
         s.findAve(args[0], args[1]);
-        s.findPair(args[0], args[2]); //, Long.parseLong(args[3]), Long.parseLong(args[4]));
+        s.findPair(args[0], args[2], Long.parseLong(args[3]), Long.parseLong(args[4]));
     }
 }
