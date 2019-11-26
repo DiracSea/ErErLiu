@@ -13,6 +13,7 @@ import java.util.List;
 
 
 public class SparkSQL {
+
     public void findAve(String input, String output) {
         SparkSession spark = SparkSession
                 .builder()
@@ -86,7 +87,7 @@ public class SparkSQL {
         a.show(1);
         // long time_count = df.count(); alternative
         JavaRDD<String> res = a.toJavaRDD()
-                .map(s -> "Number of time between t0 and t1 are "+s.getAs("t").toString())
+                .map(s -> "Logs between time0 and time1 are "+s.getAs("t").toString())
                 .coalesce(1);
         res.saveAsTextFile(output);
         spark.close();
@@ -100,7 +101,22 @@ public class SparkSQL {
          * args[3] = t1
          */
         SparkSQL s = new SparkSQL();
+
+        long start_time = System.nanoTime();
         s.findAve(args[0], args[1]);
+        long end_time = System.nanoTime();
+        double d = (end_time - start_time) / 1e6;
+
+        start_time = System.nanoTime();
         s.findPair(args[0], args[2], Long.parseLong(args[3]), Long.parseLong(args[4]));
+        end_time = System.nanoTime();
+        double d1 = (end_time - start_time) / 1e6;
+
+        start_time = System.nanoTime();
+
+        end_time = System.nanoTime();
+        double d2 = (end_time - start_time) / 1e6;
+
+        System.out.println("time: " + d + "; time1: " + d1 + "; time2: " + d2);
     }
 }
