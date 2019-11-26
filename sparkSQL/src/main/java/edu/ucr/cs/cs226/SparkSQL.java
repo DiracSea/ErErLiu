@@ -41,11 +41,11 @@ public class SparkSQL {
         // operation
         // host 0; - 1; timestamp 2; ins 3; url 4; code 5; bytes 6
          df.createOrReplaceTempView("visit");
-         Dataset<Row> avgBytes = df.sqlContext().sql("SELECT code, avg(bytes) from visit GROUP BY code");
+         Dataset<Row> avgBytes = df.sqlContext().sql("SELECT code, avg(bytes) as avg from visit GROUP BY code");
          avgBytes.show(5);
         // df.groupBy("code").avg("bytes").as("num");
         // df.show(5);
-        JavaRDD<String> res = df.toJavaRDD().map(s -> "Code " + s.getAs("code").toString() + ", average number of bytes = " + s.getAs("avg(bytes)").toString());
+        JavaRDD<String> res = df.toJavaRDD().map(s -> "Code " + s.getAs("code").toString() + ", average number of bytes = " + s.getAs("avg").toString());
         res.saveAsTextFile(output);
     }
 
