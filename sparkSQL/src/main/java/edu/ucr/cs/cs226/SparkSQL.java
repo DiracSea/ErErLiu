@@ -48,7 +48,7 @@ public class SparkSQL {
         res.saveAsTextFile(output);
     }
 
-    public void findPair(String input, String output, long t0, long t1) {
+    public void findPair(String input, long t0, long t1) {
         SparkSession spark = SparkSession
                 .builder()
                 .appName("Java Spark SQL")
@@ -78,5 +78,17 @@ public class SparkSQL {
         Dataset<Row> res = df.select("time").filter("time > t0 and time < t1");
         long time_count = df.count();
         System.out.println("Number of time between t0 and t1 are "+time_count);
+    }
+    public static void main(String[] args) {
+        // host 0; - 1; timestamp 2; ins 3; url 4; code 5; bytes 6
+        /*
+         * args[0] = "/data/input/nasa.tsv"
+         * args[1] = output1
+         * args[2] = t0
+         * args[3] = t1
+         */
+        SparkSQL s = new SparkSQL();
+        s.findAve(args[0], args[1]);
+        s.findPair(args[0], Long.parseLong(args[2]), Long.parseLong(args[3]));
     }
 }
