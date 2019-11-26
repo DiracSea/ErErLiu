@@ -45,7 +45,9 @@ public class SparkSQL {
          avgBytes.show(5);
         // df.groupBy("code").avg("bytes").as("num");
         // df.show(5);
-        JavaRDD<String> res = avgBytes.toJavaRDD().map(s -> "Code " + s.getAs("code").toString() + ", average number of bytes = " + s.getAs("avg").toString());
+        JavaRDD<String> res = avgBytes.toJavaRDD()
+                .map(s -> "Code " + s.getAs("code").toString() + ", average number of bytes = " + s.getAs("avg").toString())
+                .coalesce(1);
         res.saveAsTextFile(output);
         spark.close();
     }
@@ -83,7 +85,9 @@ public class SparkSQL {
         Dataset<Row> a = df.sqlContext().sql("SELECT count(time) as t from visit where time > "+t0+" and time < "+t1);
         a.show(1);
         // long time_count = df.count(); alternative
-        JavaRDD<String> res = a.toJavaRDD().map(s -> "Number of time between t0 and t1 are "+s.getAs("t").toString());
+        JavaRDD<String> res = a.toJavaRDD()
+                .map(s -> "Number of time between t0 and t1 are "+s.getAs("t").toString())
+                .coalesce(1);
         res.saveAsTextFile(output);
         spark.close();
     }
