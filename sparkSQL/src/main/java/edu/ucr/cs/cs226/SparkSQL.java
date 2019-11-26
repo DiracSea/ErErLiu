@@ -76,7 +76,7 @@ public class SparkSQL {
                 .load(input);
         // operation
         // host 0; - 1; timestamp 2; ins 3; url 4; code 5; bytes 6
-        Dataset<Row> res = df.select("time").filter("time > t0").filter("time < t1");
+        Dataset<Row> res = df.select("time").filter("time>t0").filter("time<t1");
         long time_count = df.count();
         System.out.println("Number of time between t0 and t1 are "+time_count);
     }
