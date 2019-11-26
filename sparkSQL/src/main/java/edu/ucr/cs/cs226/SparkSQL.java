@@ -22,7 +22,7 @@ public class SparkSQL {
 
         /*spark.sqlContext().implicits();*/
         // Schema
-        String schema = "host tmp timestamp ins url code bytes";
+        String schema = "host tmp time ins url code bytes";
         List<StructField> fields = new ArrayList<>();
         for (String fieldName : schema.split(" ")) {
             StructField field = DataTypes.createStructField(fieldName, DataTypes.StringType,true);
@@ -49,7 +49,13 @@ public class SparkSQL {
         res.saveAsTextFile(output);
     }
 
-    public void findPair(String input, String output, long t0, long t1) { // t0 < t1
+    public void findPair(String input, String output) { // t0 < t1
+        long t0 = 800000000, t1 = 804572208; 
+        System.out.println((t0+t1)/2); // check input
+        if ((t0+t1)/2 < 80457121) {
+            System.out.println("input error");
+            return;
+        }
         SparkSession spark = SparkSession
                 .builder()
                 .appName("Java Spark SQL")
@@ -94,6 +100,6 @@ public class SparkSQL {
          */
         SparkSQL s = new SparkSQL();
         s.findAve(args[0], args[1]);
-        s.findPair(args[0], args[2], Long.parseLong(args[3]), Long.parseLong(args[4]));
+        s.findPair(args[0], args[2]); //, Long.parseLong(args[3]), Long.parseLong(args[4]));
     }
 }
