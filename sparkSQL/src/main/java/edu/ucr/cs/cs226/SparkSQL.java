@@ -45,7 +45,7 @@ public class SparkSQL {
          avgBytes.show(5);
         // df.groupBy("code").avg("bytes").as("num");
         // df.show(5);
-        JavaRDD<String> res = df.toJavaRDD().map(s -> "Code " + s.getAs("code").toString() + ", average number of bytes = " + s.getAs("avg").toString());
+        JavaRDD<String> res = avgBytes.toJavaRDD().map(s -> "Code " + s.getAs("code").toString() + ", average number of bytes = " + s.getAs("avg").toString());
         res.saveAsTextFile(output);
     }
 
