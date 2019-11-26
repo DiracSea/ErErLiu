@@ -50,12 +50,9 @@ public class SparkSQL {
     }
 
     public void findPair(String input, String output) { // t0 < t1
-        long t0 = 800000000, t1 = 804572208; 
+        long t0 = 0, t1 = 804572208;
         System.out.println((t0+t1)/2); // check input
-        if ((t0+t1)/2 < 80457121) {
-            System.out.println("input error");
-            return;
-        }
+
         SparkSession spark = SparkSession
                 .builder()
                 .appName("Java Spark SQL")
