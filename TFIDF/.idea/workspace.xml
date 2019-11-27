@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="bdb67fa7-84b1-4fce-9540-0a31ee54fd99" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/part-00001" beforeDir="false" afterPath="$PROJECT_DIR$/part-00001" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
-    </list>
+    <list default="true" id="4695b30d-cbba-47a8-afb4-ee71708689fb" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -18,13 +15,8 @@
       </list>
     </option>
   </component>
-  <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
-  </component>
-  <component name="ProjectId" id="1U61Mcl2n59uQqpKv9tJBCFxgV7" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectId" id="1UBz4BvtVrPggmnipeDRW0vex3r" />
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="configurable.group.appearance" />
   </component>
   <component name="RunDashboard">
@@ -44,25 +36,12 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="bdb67fa7-84b1-4fce-9540-0a31ee54fd99" name="Default Changelist" comment="" />
-      <created>1574662183738</created>
+      <changelist id="4695b30d-cbba-47a8-afb4-ee71708689fb" name="Default Changelist" comment="" />
+      <created>1574844582890</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1574662183738</updated>
+      <updated>1574844582890</updated>
     </task>
     <servers />
-  </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State>
-              <option name="COLUMN_ORDER" />
-            </State>
-          </value>
-        </entry>
-      </map>
-    </option>
   </component>
 </project>
