@@ -38,11 +38,11 @@ public class single {
 			hello spark
 			goodBye spark
 		 */
-		Dataset<Row> word = spark.read().json(path+"/"+src+"/COMMENTS_"+src+".json").select("body");
+		Dataset<Row> df = spark.read().json(path+"/"+src+"/COMMENTS_"+src+".json").select("body");
         df.show(5);
 		JavaRDD<String> text = df.toJavaRDD().map(s -> s.getAs("body").toString());
 
-        JavaRDD<List<String>> tf = text
+        JavaRDD<List<String>> wordFlow = text
 				.map(new Function<String, List<String>>() {
 					/**
 					 * 
@@ -56,7 +56,7 @@ public class single {
 
                 }).cache();
                 
-        JavaRDD<Vector> tf = hTF.transform(word).cache();
+        JavaRDD<Vector> tf = hTF.transform(wordFlow).cache();
         IDFModel idf = new IDF().fit(tf);
 
         JavaRDD<Vector> tfIdf = idf.transform(tf);
