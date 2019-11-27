@@ -46,7 +46,7 @@ public class single {
 
             @Override
             public Vector call(String v1) throws Exception {
-                return hashingTF.transform(Arrays.asList(v1.replaceAll("[^a-zA-Z\\s]", "").split(" ")));
+                return hashingTF.transform(Arrays.asList(v1.split(" "))); //.replaceAll("[^a-zA-Z\\s]", "").
             }
         });
         IDFModel idf = new IDF().fit(tf);
