@@ -1,6 +1,7 @@
 package TFIDF;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -8,9 +9,10 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
-import org.apache.spark.mllib.feature.HashingTF;
-import org.apache.spark.mllib.feature.IDF;
-import org.apache.spark.mllib.feature.IDFModel;
+import org.apache.spark.ml.feature.Tokenizer;
+import org.apache.spark.ml.feature.HashingTF;
+import org.apache.spark.ml.feature.IDF;
+import org.apache.spark.ml.feature.IDFModel;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -29,7 +31,7 @@ public class single {
                 // .config("")
                 .getOrCreate();
 
-        final HashingTF hTF = new HashingTF();
+        // final HashingTF hTF = new HashingTF();
 
 		/*
 		 	hello mllib
@@ -40,18 +42,19 @@ public class single {
 		 */
 		Dataset<Row> df = spark.read().json(path+"/"+src+"/COMMENTS_"+src+".json").select("body");
         df.show(5);
-        Tokenizer tokenizer = new Tokenizer().setInputCol("sentence").setOutputCol("words");
+        Tokenizer tokenizer = new Tokenizer().setInputCol("body").setOutputCol("words");
         Dataset<Row> wordsData = tokenizer.transform(df);
 
         HashingTF hashingTF = new HashingTF()
-        .setInputCol("words")
-        .setOutputCol("rawFeatures"); 
+                .setInputCol("words")
+                .setOutputCol("rawFeatures");
 
         Dataset<Row> featurizedData = hashingTF.transform(wordsData);
         featurizedData.show(5); 
 
         // IDF is an Estimator which is fit on a dataset and produces an IDFModel
-        IDF idf = new IDF().setInputCol("rawFeatures").setOutputCol("features");
+        IDF idf = new IDF()
+                .setInputCol("rawFeatures").setOutputCol("features");
         IDFModel idfModel = idf.fit(featurizedData);
     
         // The IDFModel takes feature vectors (generally created from HashingTF or CountVectorizer) and scales each column
@@ -73,9 +76,9 @@ public class single {
         // IDFModel idf = new IDF().fit(tf);
 
         // JavaRDD<Vector> tfIdf = idf.transform(tf);
-        List<String> list = new ArrayList(); 
+        List<String> list = new ArrayList();
         for(Row row:rescaledData.collectAsList()){
-            list.append(row.toString()+"\n"); 
+            list.add(row.toString());
         }
         spark.close();
 
