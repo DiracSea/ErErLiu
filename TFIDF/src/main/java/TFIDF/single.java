@@ -29,7 +29,7 @@ public class single {
                 // .config("")
                 .getOrCreate();
 
-        final HashingTF hashingTF = new HashingTF();
+        final HashingTF hTF = new HashingTF();
 
 		/*
 		 	hello mllib
@@ -42,19 +42,28 @@ public class single {
         df.show(5);
 		JavaRDD<String> text = df.toJavaRDD().map(s -> s.getAs("body").toString());
 
-        JavaRDD<Vector> tf = text.map(new Function<String, Vector>() {
+        JavaRDD<List<String>> tf = text
+				.map(new Function<String, List<String>>() {
+					/**
+					 * 
+					 */
+					private static final long serialVersionUID = 1091920418241245797L;
 
-            @Override
-            public Vector call(String v1) throws Exception {
-                return hashingTF.transform(Arrays.asList(v1.split(" "))); //.replaceAll("[^a-zA-Z\\s]", "").
-            }
-        });
+					public List<String> call(String line) throws Exception {
+						String[] words = line.replaceAll("[^a-zA-Z\\s]", "").split(" ");
+						return Arrays.asList(words);
+					}
+
+                }).cache();
+                
+        JavaRDD<Vector> tf = hTF.transform(wordData).cache();
         IDFModel idf = new IDF().fit(tf);
 
         JavaRDD<Vector> tfIdf = idf.transform(tf);
 
         List<Vector> list = tfIdf.collect();
         spark.close();
+        
         return list.toString();
     }
 
