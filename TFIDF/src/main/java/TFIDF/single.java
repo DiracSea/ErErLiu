@@ -40,28 +40,43 @@ public class single {
 		 */
 		Dataset<Row> df = spark.read().json(path+"/"+src+"/COMMENTS_"+src+".json").select("body");
         df.show(5);
-		JavaRDD<String> text = df.toJavaRDD().map(s -> s.getAs("body").toString());
+        Tokenizer tokenizer = new Tokenizer().setInputCol("sentence").setOutputCol("words");
+        Dataset<Row> wordsData = tokenizer.transform(df);
 
-        JavaRDD<List<String>> wordFlow = text
-				.map(new Function<String, List<String>>() {
-					/**
-					 * 
-					 */
-					private static final long serialVersionUID = 1091920418241245797L;
+        HashingTF hashingTF = new HashingTF()
+        .setInputCol("words")
+        .setOutputCol("rawFeatures"); 
 
-					public List<String> call(String line) throws Exception {
-						String[] words = line.replaceAll("[^a-zA-Z\\s]", "").split(" ");
-						return Arrays.asList(words);
-					}
+        Dataset<Row> featurizedData = hashingTF.transform(wordsData);
+        featurizedData.show(5); 
 
-                }).cache();
+        // IDF is an Estimator which is fit on a dataset and produces an IDFModel
+        IDF idf = new IDF().setInputCol("rawFeatures").setOutputCol("features");
+        IDFModel idfModel = idf.fit(featurizedData);
+    
+        // The IDFModel takes feature vectors (generally created from HashingTF or CountVectorizer) and scales each column
+        Dataset<Row> rescaledData = idfModel.transform(featurizedData);
+
+		// JavaRDD<String> text = df.toJavaRDD().map(s -> s.getAs("body").toString());
+
+        // JavaRDD<List<String>> wordFlow = text
+		// 		.map(new Function<String, List<String>>() {
+        //             @Override
+        //             public List<String> call(String line) throws Exception {
+		// 				String[] words = line.replaceAll("[^a-zA-Z\\s]", "").split(" ");
+		// 				return Arrays.asList(words);
+		// 			}
+
+        //         }).cache();
                 
-        JavaRDD<Vector> tf = hTF.transform(wordFlow).cache();
-        IDFModel idf = new IDF().fit(tf);
+        // JavaRDD<Vector> tf = hTF.transform(wordFlow).cache();
+        // IDFModel idf = new IDF().fit(tf);
 
-        JavaRDD<Vector> tfIdf = idf.transform(tf);
-
-        List<Vector> list = tfIdf.collect();
+        // JavaRDD<Vector> tfIdf = idf.transform(tf);
+        List<String> list = new ArrayList(); 
+        for(Row row:rescaledData.collectAsList()){
+            list.append(row.toString()+"\n"); 
+        }
         spark.close();
 
         return list.toString();
