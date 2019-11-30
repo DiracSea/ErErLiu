@@ -72,15 +72,14 @@ public class single {
 
         // Get Top N data and filter deleted row
         // rescaledData.select(" where ");
+        Dataset<Row> res = rescaledData
+                .select("filtered", "features");
 
 
-        List<String> list = new ArrayList();
-        for(Row row:rescaledData.collectAsList()){
-            list.add(row.toString());
-        }
+        String json = res.toJSON().toString();
         spark.close();
 
-        return list.toString();
+        return json;
     }
 
     public String[] findDir(String path) {
@@ -114,7 +113,7 @@ public class single {
 
 
         for (String d : dir) {
-            if(!file.getParentFile().exists()) file.getParentFile().mkdirs();
+            if(!file.getParentFile().exists()) continue;
             fos = new FileOutputStream(file, append);
             osw = new OutputStreamWriter(fos, charset);
             bw = new BufferedWriter(osw);

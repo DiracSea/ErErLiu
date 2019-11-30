@@ -36,6 +36,7 @@ public class score {
                 .withColumn("upvote_ratio", functions.lit(df1.select("upvote_ratio").head().getDouble(0)));
         attr.show();
         String res = attr.toJSON().toString();
+        spark.close();
         return res;
     }
     public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
