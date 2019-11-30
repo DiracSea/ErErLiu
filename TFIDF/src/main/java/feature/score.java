@@ -22,12 +22,13 @@ public class score {
                 .select(functions.mean(col).alias("mean"), functions.min(col).alias("min"),
                         functions.max(col).alias("max"), functions.stddev(col).alias("stddev"));
         df.withColumn("name", functions.lit(src));
-        String res = df.describe().toJSON().toString();
+        String res = df.toJSON().toString();
         return res;
     }
     public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
         String input = args[0], output = args[1];
         single s = new single();
+        score s1 = new score();
         String[] dir = s.findDir(input);
 
         boolean append = true;
@@ -47,7 +48,7 @@ public class score {
             osw = new OutputStreamWriter(fos, charset);
             bw = new BufferedWriter(osw);
             pw = new PrintWriter(bw, autoFlush);
-            tmp = s.getValue(input, d);
+            tmp = s1.getValue(input, d);
             pw.write(tmp);
         }
     }
