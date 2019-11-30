@@ -40,7 +40,7 @@ public class single {
         Dataset<Row> new_df = df
                 // .withColumn("body", functions.regexp_replace(df.col("body"), "[^a-zA-Z.'?!]", " "))
                 .select(functions.regexp_replace(df.col("body"),"[^a-zA-Z.']+"," "))
-                .filter(df.col("body").notEqual("[deleted]").notEqual("").notEqual(" ")); // remove strange symbols include 0-9,.?!
+                .filter(df.col("body").notEqual("deleted").notEqual("").notEqual(" ")); // remove strange symbols include 0-9,.?!
         new_df.show(5);
 
         Tokenizer tokenizer = new Tokenizer()
