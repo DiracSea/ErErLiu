@@ -35,8 +35,7 @@ public class single {
 		 */
 
 		Dataset<Row> df = spark.read()
-                .json(path+"/"+src+"/COMMENTS_"+src+".json")
-                .select("body");
+                .json(path+"/"+src+"/COMMENTS_"+src+".json");
         Dataset<Row> new_df = df
                 // .withColumn("body", functions.regexp_replace(df.col("body"), "[^a-zA-Z.'?!]", " "))
                 .select(functions.regexp_replace(df.col("body"),"[^a-zA-Z.']+"," "))
