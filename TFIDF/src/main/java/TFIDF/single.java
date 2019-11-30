@@ -43,10 +43,10 @@ public class single {
         new_df.withColumn("body", functions.trim(new_df.col("body")));
         new_df.collect();
 
-        new_df.filter("body != ''");
+        new_df.filter(r -> r.getAs("body") != "deleted");
         new_df.collect();
 
-        new_df.filter("body != 'delete'"); // remove strange symbols include 0-9,.?!
+        new_df.filter(r -> r.getAs("body") != ""); // remove strange symbols include 0-9,.?!
         new_df.collect();
         new_df.show(5);
 
@@ -61,22 +61,22 @@ public class single {
         Dataset<Row> wordFiltered = remover.transform(wordsData);
         wordFiltered.show(5);
 
-        CountVectorizerModel cv = new CountVectorizer()
+/*        CountVectorizerModel cv = new CountVectorizer()
                 .setInputCol("filtered")
                 .setOutputCol("rawFeatures")
                 .setVocabSize(50000)
                 .setMinDF(2)
                 .fit(wordFiltered);
         Dataset<Row> featurizedData = cv.transform(wordFiltered);
-        featurizedData.show(5);
+        featurizedData.show(5);*/
 
-        /*HashingTF hashingTF = new HashingTF()
+        HashingTF hashingTF = new HashingTF()
                 .setInputCol("filtered")
-                .setOutputCol("rawFeatures");
-                // .setNumFeatures(262144);
+                .setOutputCol("rawFeatures")
+                .setNumFeatures(16384);
 
         Dataset<Row> featurizedData = hashingTF.transform(wordFiltered);
-        featurizedData.show(5); */
+        featurizedData.show(5);
 
         // IDF is an Estimator which is fit on a dataset and produces an IDFModel
         IDF idf = new IDF()
@@ -140,6 +140,7 @@ public class single {
             pw.write(d);
             tmp = s.getValue(input,d);
             pw.write(tmp);
+            break;
         }
     }
 }
