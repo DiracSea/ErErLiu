@@ -39,7 +39,7 @@ public class single {
                 .select("body");
         Dataset<Row> new_df = df
                 // .withColumn("body", functions.regexp_replace(df.col("body"), "[^a-zA-Z.'?!]", " "))
-                .withColumn("body", functions.regexp_replace(df.col("body"),"[^a-zA-Z.']"," ")); 
+                .withColumn("body", functions.regexp_replace(df.col("body"),"[^a-zA-Z.']+"," "));
         new_df.withColumn("body", functions.trim(new_df.col("body")));
         new_df.collect();
 
@@ -59,15 +59,24 @@ public class single {
                 .setInputCol("token")
                 .setOutputCol("filtered");
         Dataset<Row> wordFiltered = remover.transform(wordsData);
-        wordFiltered.show(5); 
+        wordFiltered.show(5);
 
-        HashingTF hashingTF = new HashingTF()
+        CountVectorizerModel cv = new CountVectorizer()
+                .setInputCol("filtered")
+                .setOutputCol("rawFeatures")
+                .setVocabSize(50000)
+                .setMinDF(2)
+                .fit(wordFiltered);
+        Dataset<Row> featurizedData = cv.transform(wordFiltered);
+        featurizedData.show(5);
+
+        /*HashingTF hashingTF = new HashingTF()
                 .setInputCol("filtered")
                 .setOutputCol("rawFeatures");
                 // .setNumFeatures(262144);
 
         Dataset<Row> featurizedData = hashingTF.transform(wordFiltered);
-        featurizedData.show(5); 
+        featurizedData.show(5); */
 
         // IDF is an Estimator which is fit on a dataset and produces an IDFModel
         IDF idf = new IDF()
