@@ -38,7 +38,7 @@ public class single {
 		Dataset<Row> df = spark.read().json(path+"/"+src+"/COMMENTS_"+src+".json").select("body");
         df.show(5);
         df.withColumn("body", functions.regexp_replace(df.col("body"), "[^a-zA-Z.',?!]", " "))
-                .filter("body != \\s+")
+                .filter("body != ' '")
                 .filter("body != ''"); // remove strange symbols include 0-9,.?!
         df.show(5);
 
