@@ -40,9 +40,14 @@ public class single {
         Dataset<Row> new_df = df
                 // .withColumn("body", functions.regexp_replace(df.col("body"), "[^a-zA-Z.'?!]", " "))
                 .withColumn("body", functions.regexp_replace(df.col("body"),"[^a-zA-Z.']"," "))
-                .withColumn("body", functions.trim(df.col("body")))
-                .filter("body != ''")
-                .filter("body != 'delete'"); // remove strange symbols include 0-9,.?!
+        new_df.withColumn("body", functions.trim(new_df.col("body")));
+        new_df.collect();
+
+        new_df.filter("body != ''");
+        new_df.collect();
+
+        new_df.filter("body != 'delete'"); // remove strange symbols include 0-9,.?!
+        new_df.collect();
         new_df.show(5);
 
         Tokenizer tokenizer = new Tokenizer()
