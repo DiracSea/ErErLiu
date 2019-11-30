@@ -34,8 +34,11 @@ public class single {
 			spark
 		 */
 
-		Dataset<Row> df = spark.read().json(path+"/"+src+"/COMMENTS_"+src+".json").select("body")
-        Dataset<Row> new_df = df.withColumn("body", functions.regexp_replace(df.col("body"), "[^a-zA-Z.'?!]", " "))
+		Dataset<Row> df = spark.read()
+                .json(path+"/"+src+"/COMMENTS_"+src+".json")
+                .select("body");
+        Dataset<Row> new_df = df
+                .withColumn("body", functions.regexp_replace(df.col("body"), "[^a-zA-Z.'?!]", " "))
                 .filter("body != '[deleted]'")
                 .filter("body != ''"); // remove strange symbols include 0-9,.?!
         new_df.show(5);
