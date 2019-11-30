@@ -34,17 +34,16 @@ public class single {
 			spark
 		 */
 
-		Dataset<Row> df = spark.read().json(path+"/"+src+"/COMMENTS_"+src+".json").select("body");
-        df.show(5);
-        df.withColumn("body", functions.regexp_replace(df.col("body"), "[^a-zA-Z.'?!]", " "))
+		Dataset<Row> df = spark.read().json(path+"/"+src+"/COMMENTS_"+src+".json").select("body")
+        Dataset<Row> new_df = df.withColumn("body", functions.regexp_replace(df.col("body"), "[^a-zA-Z.'?!]", " "))
                 .filter("body != '[deleted]'")
                 .filter("body != ''"); // remove strange symbols include 0-9,.?!
-        df.show(5);
+        new_df.show(5);
 
         Tokenizer tokenizer = new Tokenizer()
                 .setInputCol("body")
                 .setOutputCol("token");
-        Dataset<Row> wordsData = tokenizer.transform(df);
+        Dataset<Row> wordsData = tokenizer.transform(new_df);
 
         StopWordsRemover remover = new StopWordsRemover()
                 .setInputCol("token")
@@ -74,6 +73,7 @@ public class single {
         // rescaledData.select(" where ");
         Dataset<Row> res = rescaledData
                 .select("filtered", "features");
+        res.show(5);
 
 
         String json = res.toJSON().toString();
