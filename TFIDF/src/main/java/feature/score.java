@@ -21,7 +21,11 @@ public class score {
         Dataset<Row> des = df
                 .select(functions.mean(col).alias("mean"), functions.min(col).alias("min"),
                         functions.max(col).alias("max"), functions.stddev(col).alias("stddev"));
-        df.withColumn("name", functions.lit(src));
+        Dataset<Row> df1 = spark.read().json(path+"/"+src+"/SUBMISSION_"+src+".json").select(col, "upvote_ratio");
+        df
+                .withColumn("name", functions.lit(src))
+                .withColumn("glo_score", df1.col(col))
+                .withColumn("upvote_ratio", df1.col("upvote_ratio"));
         String res = df.toJSON().toString();
         return res;
     }
@@ -43,7 +47,7 @@ public class score {
         BufferedWriter bw;
         PrintWriter pw;
         for (String d : dir) {
-            if(!file.getParentFile().exists()) file.getParentFile().mkdirs();
+            if(!file.getParentFile().exists()) continue;
             fos = new FileOutputStream(file, append);
             osw = new OutputStreamWriter(fos, charset);
             bw = new BufferedWriter(osw);
