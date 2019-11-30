@@ -19,7 +19,7 @@ public class score {
                 .getOrCreate();
         Dataset<Row> df = spark.read().json(path+"/"+src+"/COMMENTS_"+src+".json").select(col);
         df.describe().show();
-        
+
         Dataset<Row> des = df
                 .select(functions.mean(col).alias("mean"), functions.min(col).alias("min"),
                         functions.max(col).alias("max"), functions.stddev(col).alias("stddev"));
@@ -27,8 +27,8 @@ public class score {
         Dataset<Row> df1 = spark.read().json(path+"/"+src+"/SUBMISSION_"+src+".json").select(col, "upvote_ratio");
         des
                 .withColumn("name", functions.lit(src))
-                .withColumn("glo_score", df1.col(col))
-                .withColumn("upvote_ratio", df1.col("upvote_ratio"));
+                .withColumn("glo_score", functions.lit(df1.select(col).head().getInt(0)))
+                .withColumn("upvote_ratio", functions.lit(df1.select("upvote_ratio").head().getInt(0)));
         des.show();
         String res = des.toJSON().toString();
         return res;
