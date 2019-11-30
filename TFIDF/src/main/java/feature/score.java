@@ -6,6 +6,7 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.functions;
+import scala.util.parsing.json.JSONObject;
 
 import java.io.*;
 
@@ -25,12 +26,16 @@ public class score {
                         functions.max(col).alias("max"), functions.stddev(col).alias("stddev"));
         des.show();
         Dataset<Row> df1 = spark.read().json(path+"/"+src+"/SUBMISSION_"+src+".json").select(col, "upvote_ratio");
-        des
-                .withColumn("name", functions.lit(src))
-                .withColumn("glo_score", functions.lit(df1.select(col).head().getInt(0)))
-                .withColumn("upvote_ratio", functions.lit(df1.select("upvote_ratio").head().getInt(0)));
+        //    .withColumn("name", functions.lit(src))
+        //    .withColumn("glo_score", functions.lit(df1.select(col).head().getInt(0)))
+        //    .withColumn("upvote_ratio", functions.lit(df1.select("upvote_ratio").head().getInt(0)));
         des.show();
-        String res = des.toJSON().toString();
+        Dataset<Row> attr = des
+                .withColumn("name", functions.lit(src))
+                .withColumn("glo_score", functions.lit(df1.select(col).head().getLong(0)))
+                .withColumn("upvote_ratio", functions.lit(df1.select("upvote_ratio").head().getDouble(0)));
+        attr.show();
+        String res = attr.toJSON().toString();
         return res;
     }
     public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
