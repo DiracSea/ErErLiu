@@ -21,7 +21,6 @@ public class single {
 
     public String getValue(String path, String src) {
 
-
         SparkSession spark = SparkSession
                 .builder()
                 .appName("TF.IDF")
@@ -37,8 +36,8 @@ public class single {
 
 		Dataset<Row> df = spark.read().json(path+"/"+src+"/COMMENTS_"+src+".json").select("body");
         df.show(5);
-        df.withColumn("body", functions.regexp_replace(df.col("body"), "[^a-zA-Z.',?!]", " "))
-                .filter("body != ' '")
+        df.withColumn("body", functions.regexp_replace(df.col("body"), "[^a-zA-Z.'?!]", " "))
+                .filter("body != '[deleted]'")
                 .filter("body != ''"); // remove strange symbols include 0-9,.?!
         df.show(5);
 
