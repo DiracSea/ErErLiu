@@ -39,7 +39,7 @@ public class single {
                 .select("body");
         Dataset<Row> new_df = df
                 // .withColumn("body", functions.regexp_replace(df.col("body"), "[^a-zA-Z.'?!]", " "))
-                .withColumn("body", functions.regexp_replace(df.col("body"),"[^a-zA-Z.']"," "))
+                .withColumn("body", functions.regexp_replace(df.col("body"),"[^a-zA-Z.']"," ")); 
         new_df.withColumn("body", functions.trim(new_df.col("body")));
         new_df.collect();
 
