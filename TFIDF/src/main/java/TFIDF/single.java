@@ -69,6 +69,11 @@ public class single {
     
         // The IDFModel takes feature vectors (generally created from HashingTF or CountVectorizer) and scales each column
         Dataset<Row> rescaledData = idfModel.transform(featurizedData);
+        rescaledData.show(5);
+
+        // Get Top N data and filter deleted row
+        // rescaledData.select(" where ");
+
 
         List<String> list = new ArrayList();
         for(Row row:rescaledData.collectAsList()){
