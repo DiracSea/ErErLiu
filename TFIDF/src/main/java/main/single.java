@@ -98,7 +98,7 @@ public class single {
                     tw.setLabel(parts[0].trim());
                     tw.setValue(parts[1]
                             .replaceAll("\\['", "")
-                            .replaceAll("','", " ")
+                            .replaceAll("', '", " ")
                             .replaceAll("']",""));
                     return tw;
                 });
