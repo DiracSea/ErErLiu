@@ -294,14 +294,15 @@ public class single {
     }
 
     public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
-        String input = args[0], output = args[1], tw = args[2];
+        String input = args[0], output = args[1], tw = args[2], output1 = args[3];
         single s = new single();
         String[] dir = s.findDir(input);
         // similarDataset(s.getValue(input, tw));
         Dataset<Row> res = s.getValue(input, tw);
-        res.coalesce(1);
-        res.toJSON().javaRDD().saveAsTextFile(output);
+        res.toJSON().javaRDD().repartition(1).saveAsTextFile(output);
 
+        Dataset<Row> sim = similarDataset(res);
+        res.toJSON().javaRDD().repartition(1).saveAsTextFile(output1);
 /*        boolean append = true;
         boolean autoFlush = true;
         String charset = "UTF-8";

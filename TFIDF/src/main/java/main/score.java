@@ -50,8 +50,7 @@ public class score {
             if (d.equals("movie")) break;
             res = res.union(s1.getValue(input, d));
         }
-        res.coalesce(1);
-        res.toJSON().javaRDD().saveAsTextFile(output);
+        res.toJSON().javaRDD().repartition(1).saveAsTextFile(output);
     }
 
 }
