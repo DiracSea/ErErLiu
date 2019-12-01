@@ -2,14 +2,17 @@ package main;
 
 import java.io.*;
 import java.util.Arrays;
+import java.util.Vector;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.ForeachFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.ml.feature.*;
 import org.apache.spark.sql.*;
+import org.apache.spark.sql.api.java.UDF1;
 import scala.Tuple2;
 
 
@@ -62,9 +65,9 @@ public class single {
         Dataset<Row> wordFiltered = remover
                 .transform(wordsData)
                 // .filter("filtered != null")
-                .withColumn("label", functions.lit(src));
+                .withColumn("label", functions.lit("Reddit"));
         wordFiltered.show(5);
-        return wordFiltered.select("label", "body");
+        return wordFiltered.select("label", "filtered");
     }
 
 /*    public Tuple2<String, String[]> tw(String line) {
@@ -133,7 +136,7 @@ public class single {
                 .transform(wordsData);
                 // .filter("filtered != null");
         wordFiltered.show(5);
-        return wordFiltered.select("label", "body");
+        return wordFiltered.select("label", "filtered");
     }
     public Dataset<Row> getValue(String path, String tw) {
 
@@ -152,8 +155,7 @@ public class single {
         for (String d : dir) {
             if (d.equals("movie")) continue;
             reddit = initReddit(path, d);
-            twitter.union(reddit);
-            twitter.show(5);
+            twitter = twitter.union(reddit);
         }
         Dataset<Row> df = twitter;
 
@@ -189,7 +191,68 @@ public class single {
         return rescaledData.select("label", "filtered", "features");
     }
 
-    public String[] findDir(String path) {
+    public static class SimilarText implements Serializable, Comparable<SimilarText> {
+        private String label;
+        private String filtered;
+        private double similarity;
+
+        public String getLabel() {
+            return label;
+        }
+
+        public String getFiltered() {
+            return filtered;
+        }
+
+        public double getSimilarity() {
+            return similarity;
+        }
+
+        public void setLabel(String label) {
+            this.label = label;
+        }
+
+        public void setFiltered(String filtered) {
+            this.filtered = filtered;
+        }
+
+        public void setSimilarity(double similarity) {
+            this.similarity = similarity;
+        }
+
+        @Override
+        public int compareTo(SimilarText similarText) {
+            SimilarText s = similarText;
+
+            if (this.similarity > s.similarity)
+                return 1;
+            else if (this.similarity < s.similarity)
+                return -1;
+            else {
+                return 0;
+            }
+        }
+    }
+    public static void similarDataset (Dataset<Row> res) {
+        Dataset<Row> reddit = res.filter("label = 'Reddit'").limit(5);
+        Dataset<Row> twitter = res.filter("label = 'Twitter'").limit(5);
+
+//        UDF1 dot = new UDF1<Row[], double[]>() {
+//            @Override
+//            public double[] call(Row[] row) throws Exception {
+//                Row r = row[0], t = row[1];
+//                String
+//                return new double[0];
+//            }
+//        };
+
+        Dataset<Row> row = twitter.join(reddit);
+        row.show();
+
+
+    }
+
+    public String[] findDir (String path) {
         File file = new File(path);
         String[] directories = file.list(new FilenameFilter() {
             @Override
@@ -205,15 +268,15 @@ public class single {
         String input = args[0], output = args[1], tw = args[2];
         single s = new single();
         String[] dir = s.findDir(input);
-        s.getValue(input, tw);
+        similarDataset(s.getValue(input, tw));
 
-        boolean append = true;
+/*        boolean append = true;
         boolean autoFlush = true;
         String charset = "UTF-8";
         String filePath = output;
-        String tmp;
+        String tmp;*/
 
-        File file = new File(filePath);
+/*        File file = new File(filePath);
         FileOutputStream fos;
         OutputStreamWriter osw;
         BufferedWriter bw;
@@ -229,6 +292,6 @@ public class single {
             pw = new PrintWriter(bw, autoFlush);
             pw.write(d);
             break;
-        }
+        }*/
     }
 }
