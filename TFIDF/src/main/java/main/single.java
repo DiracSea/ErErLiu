@@ -197,7 +197,7 @@ public class single {
         single s = new single();
         String[] dir = s.findDir(input);
         s.initTwitter(tw);
-        s.initReddit(input, "2da3m3")
+        s.initReddit(input, "2da3m3"); 
 
         boolean append = true;
         boolean autoFlush = true;
