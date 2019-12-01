@@ -61,7 +61,8 @@ public class multi {
         Dataset<KeyWords> key1 = df
                 .select("filtered", "features").filter("label = 'Twitter'")
                 .map(r -> {
-                    String[] label = r.getString(0).split(",");
+                    String fuckU = r.getAs(0);
+                    String [] label = fuckU.split(",")
                     Vector tmp = r.getAs(1);
                     double[] value = tmp.toSparse().values();
 
