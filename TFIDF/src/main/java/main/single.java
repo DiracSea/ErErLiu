@@ -2,7 +2,6 @@ package main;
 
 import java.io.*;
 import java.util.Arrays;
-import java.util.Vector;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -11,6 +10,9 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.ForeachFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.ml.feature.*;
+import org.apache.spark.ml.linalg.BLAS;
+import org.apache.spark.ml.linalg.Vector;
+import org.apache.spark.ml.linalg.Vectors;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.api.java.UDF1;
 import scala.Tuple2;
@@ -194,28 +196,28 @@ public class single {
     }
 
     public static class SimilarText implements Serializable, Comparable<SimilarText> {
-        private String label;
-        private String filtered;
+        private String label1;
+        private String label2;
         private double similarity;
 
-        public String getLabel() {
-            return label;
+        public String getLabel1() {
+            return label1;
         }
 
-        public String getFiltered() {
-            return filtered;
+        public String getLabel2() {
+            return label2;
         }
 
         public double getSimilarity() {
             return similarity;
         }
 
-        public void setLabel(String label) {
-            this.label = label;
+        public void setLabel1(String label1) {
+            this.label1 = label1;
         }
 
-        public void setFiltered(String filtered) {
-            this.filtered = filtered;
+        public void setLabel2(String label2) {
+            this.label2 = label2;
         }
 
         public void setSimilarity(double similarity) {
@@ -235,11 +237,11 @@ public class single {
             }
         }
     }
-    public static void similarDataset (Dataset<Row> res) {
+    public static Dataset<Row> similarDataset (Dataset<Row> res) {
         SparkSession spark = initSpark();
         spark.conf().set("spark.sql.crossJoin.enabled", "true");
-        Dataset<Row> reddit = res.filter("label = 'Reddit'");
-        Dataset<Row> twitter = res.filter("label = 'Twitter'");
+        Dataset<Row> reddit = res.filter("label = 'Reddit'").select("filtered", "features");
+        Dataset<Row> twitter = res.filter("label = 'Twitter'").select("filtered", "features");
 
 //        UDF1 dot = new UDF1<Row[], double[]>() {
 //            @Override
@@ -250,21 +252,33 @@ public class single {
 //            }
 //        };
 
-//        Dataset<Row> row = twitter.join(reddit)
-//                .filter(row -> {
-//                    String label = row.getString()
-//                    String[] parts = row.split(";");
-//                    TW tw = new TW();
-//                    tw.setLabel(parts[0].trim());
-//                    tw.setBody(parts[1]
-//                            .replaceAll("\\['", "")
-//                            .replaceAll("', '", " ")
-//                            .replaceAll("']",""));
-//                    return tw;
-//                });
-//        row.show();
+        Dataset<SimilarText> similarTextDataset = twitter.join(reddit)
+                .map(r -> {
+                    String label1 = r.getString(0);
+                    String label2 = r.getString(2);
+                    Vector fTwitter = r.getAs(1);
+                    Vector fR = r.getAs(3);
+                    double ddot = BLAS.dot(fTwitter.toSparse(), fR.toSparse());
+                    double v1 = Vectors.norm(fTwitter.toSparse(), 2.0);
+                    double v2 = Vectors.norm(fR.toSparse(), 2.0);
+                    double sim = ddot / (v1*v2);
 
-
+                    SimilarText similarText = new SimilarText();
+                    similarText.setLabel1(label1);
+                    similarText.setLabel2(label2);
+                    similarText.setSimilarity(sim);
+                    return similarText;
+                }, Encoders.bean(SimilarText.class));
+        Dataset<Row> sim = spark.createDataFrame(
+                similarTextDataset.toJavaRDD(),
+                SimilarText.class
+        );
+        sim.select("label1", "label2", "similarity").createOrReplaceTempView("tmp");
+        Dataset<Row> ds = spark.sql("select label1, label2, similarity from" +
+                "(select a.*, row_number() over (partition by label1 order by similarity asc) " +
+                "as seqnum from tmp) a where seqnum <= 5 order by a.similarity asc");
+        ds.show(5);
+        return ds;
     }
 
     public String[] findDir (String path) {
