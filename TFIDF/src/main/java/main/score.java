@@ -51,7 +51,7 @@ public class score {
         String res;
         for (String d: dir) {
             if (d.equals("movie")) break;
-            res = s1.getValue(input, d).toJSON().toString();
+            res = s1.getValue(input, d).select("label", "mean", "stddev", "min", "max", "glo_score", "upvote_ratio").toJSON().toString();
             System.out.println(res);
             writer.write(res);
         }
