@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.ArrayList;
 
 
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.ml.linalg.Vector;
 
@@ -59,10 +60,10 @@ public class multi {
     public static Dataset<Row> slice(String path, String in){
         SparkSession spark = single.initSpark();
         Dataset<Row> df = single.getValue(path, in);
-        Dataset<KeyWords> key1 = df
+        JavaRDD<KeyWords> key1 = df
                 .select("filtered", "features").filter("label = 'Twitter'")
-                .map(new MapFunction<Row, KeyWords>(){
-                    public KeyWords call(Row r) {
+                .javaRDD()
+                .map(r -> {
                         String fuckU = r.getAs( 0);
                         String[] label = fuckU.split(",");
                         Vector tmp = r.getAs(1);
@@ -72,10 +73,9 @@ public class multi {
                         keyWords.setKey(label);
                         keyWords.setValue(value);
                         return keyWords;
-                    }
-                }, Encoders.bean(KeyWords.class));
+                });
         Dataset<Row> key2 = spark.createDataFrame(
-                key1.toJavaRDD(),
+                key1,
                 KeyWords.class
         ).withColumn("id", functions.monotonically_increasing_id());
 

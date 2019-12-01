@@ -164,7 +164,7 @@ public class single {
             i += 1;
             if (d.equals("movie") || i > 10) break;
             reddit = initReddit(path, d);
-            
+
             twitter.union(reddit);
         }
         Dataset<Row> df = twitter;
@@ -257,11 +257,10 @@ public class single {
 //                return new double[0];
 //            }
 //        };
+        Dataset<Row> jj = twitter.join(reddit);
 
-        Dataset<SimilarText> similarTextDataset = twitter
-                .join(reddit)
-                .map(new MapFunction<Row, SimilarText>(){
-                    public SimilarText call(Row r) {
+        JavaRDD<SimilarText> similarTextDataset = jj.toJavaRDD()
+                .map(r -> {
                         String label1 = r.getAs(0);
                         String label2 = r.getAs(2);
                         Vector fTwitter = r.getAs(1);
@@ -276,11 +275,10 @@ public class single {
                         similarText.setLabel2(label2);
                         similarText.setSimilarity(sim);
                         return similarText;
-                    }
-                }, Encoders.bean(SimilarText.class));
+                });
 
         Dataset<Row> sim = spark.createDataFrame(
-                similarTextDataset.toJavaRDD(),
+                similarTextDataset,
                 SimilarText.class
         );
         // sim.select("label1", "label2", "similarity").createOrReplaceTempView("tmp");
