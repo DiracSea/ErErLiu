@@ -48,7 +48,8 @@ public class single {
                 .setOutputCol("filtered");
         Dataset<Row> wordFiltered = remover
                 .transform(wordsData)
-                .filter("filtered != ''")
+                .filter("filtered != null")
+                .filter("filtered != [deleted]")
                 .withColumn("label", functions.lit(src));
         wordFiltered.show(5);
         return wordFiltered;
@@ -197,7 +198,7 @@ public class single {
         single s = new single();
         String[] dir = s.findDir(input);
         s.initTwitter(tw);
-        s.initReddit(input, "2da3m3"); 
+        s.initReddit(input, "2da3m3");
 
         boolean append = true;
         boolean autoFlush = true;
