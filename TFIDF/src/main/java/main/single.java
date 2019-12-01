@@ -15,12 +15,12 @@ import scala.Tuple2;
 
 public class single {
     private static SparkSession spark = null;
-    private static JavaSparkContext sc = null;
+/*    private static JavaSparkContext sc = null;
     public static JavaSparkContext initContext(){
         if (sc == null)
             sc = new JavaSparkContext(new SparkConf());
         return sc;
-    }
+    }*/
 
     public static SparkSession initSpark() {
         if (spark == null) {
@@ -101,10 +101,11 @@ public class single {
     }
 
     public static Dataset<Row> initTwitter(String path) {
-        JavaSparkContext sc = initContext();
-        JavaRDD<String> in = sc.textFile(path);
         SparkSession spark = initSpark();
 
+        JavaSparkContext sc = new JavaSparkContext(spark.sparkContext());
+        JavaRDD<String> in = sc.textFile(path);
+        
         JavaRDD<TW> table = in
                 .map(line -> {
                     String[] parts = line.split(";");
