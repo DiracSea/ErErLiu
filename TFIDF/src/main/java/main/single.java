@@ -237,7 +237,7 @@ public class single {
     }
     public static void similarDataset (Dataset<Row> res) {
         SparkSession spark = initSpark();
-        spark.conf().set("spark.sql.crossJoin.enabled", "true"); 
+        spark.conf().set("spark.sql.crossJoin.enabled", "true");
         Dataset<Row> reddit = res.filter("label = 'Reddit'");
         Dataset<Row> twitter = res.filter("label = 'Twitter'");
 
@@ -250,8 +250,19 @@ public class single {
 //            }
 //        };
 
-        Dataset<Row> row = twitter.join(reddit);
-        row.show();
+//        Dataset<Row> row = twitter.join(reddit)
+//                .filter(row -> {
+//                    String label = row.getString()
+//                    String[] parts = row.split(";");
+//                    TW tw = new TW();
+//                    tw.setLabel(parts[0].trim());
+//                    tw.setBody(parts[1]
+//                            .replaceAll("\\['", "")
+//                            .replaceAll("', '", " ")
+//                            .replaceAll("']",""));
+//                    return tw;
+//                });
+//        row.show();
 
 
     }
@@ -261,6 +272,7 @@ public class single {
         String[] directories = file.list(new FilenameFilter() {
             @Override
             public boolean accept(File current, String name) {
+                if(name.equals("movies")) return false; 
                 return new File(current, name).isDirectory();
             }
         });
