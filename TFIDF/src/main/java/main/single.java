@@ -272,7 +272,7 @@ public class single {
         String[] directories = file.list(new FilenameFilter() {
             @Override
             public boolean accept(File current, String name) {
-                if(name.equals("movies")) return false; 
+                if(name.equals("movies")) return false;
                 return new File(current, name).isDirectory();
             }
         });
@@ -284,7 +284,9 @@ public class single {
         String input = args[0], output = args[1], tw = args[2];
         single s = new single();
         String[] dir = s.findDir(input);
-        similarDataset(s.getValue(input, tw));
+        // similarDataset(s.getValue(input, tw));
+        Dataset<Row> res = s.getValue(input, tw);
+        res.toJSON().javaRDD().saveAsTextFile(output);
 
 /*        boolean append = true;
         boolean autoFlush = true;

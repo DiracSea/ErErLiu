@@ -8,13 +8,20 @@ import org.apache.spark.sql.functions;
 import java.io.*;
 
 public class score {
-    public String getValue(String path, String src) {
+    private static SparkSession spark = null;
+
+    public static SparkSession initSpark() {
+        if (spark == null) {
+            spark = SparkSession
+                    .builder()
+                    .appName("TF.IDF")
+                    .getOrCreate();
+        }
+        return spark;
+    }
+    public Dataset<Row> getValue(String path, String src) {
         String col = "score";
-        SparkSession spark = SparkSession
-                .builder()
-                .appName("TF.IDF")
-                // .config("")
-                .getOrCreate();
+        SparkSession spark = initSpark();
         Dataset<Row> df = spark.read().json(path+"/"+src+"/COMMENTS_"+src+".json").select(col);
         df.describe().show();
 
@@ -23,18 +30,14 @@ public class score {
                         functions.max(col).alias("max"), functions.stddev(col).alias("stddev"));
         des.show();
         Dataset<Row> df1 = spark.read().json(path+"/"+src+"/SUBMISSION_"+src+".json").select(col, "upvote_ratio");
-        //    .withColumn("name", functions.lit(src))
-        //    .withColumn("glo_score", functions.lit(df1.select(col).head().getInt(0)))
-        //    .withColumn("upvote_ratio", functions.lit(df1.select("upvote_ratio").head().getInt(0)));
+
         des.show();
         Dataset<Row> attr = des
                 .withColumn("label", functions.lit(src))
                 .withColumn("glo_score", functions.lit(df1.select(col).head().getLong(0)))
                 .withColumn("upvote_ratio", functions.lit(df1.select("upvote_ratio").head().getDouble(0)));
         attr.show();
-        String res = attr.toJSON().toString();
-        spark.close();
-        return res;
+        return attr;
     }
     public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
         String input = args[0], output = args[1];
@@ -42,27 +45,11 @@ public class score {
         score s1 = new score();
         String[] dir = s.findDir(input);
 
-
-        boolean append = true;
-        boolean autoFlush = true;
-        String charset = "UTF-8";
-        String filePath = output;
-        String tmp;
-
-        File file = new File(filePath);
-        FileOutputStream fos;
-        OutputStreamWriter osw;
-        BufferedWriter bw;
-        PrintWriter pw;
-        for (String d : dir) {
-            if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
-            fos = new FileOutputStream(file, append);
-            osw = new OutputStreamWriter(fos, charset);
-            bw = new BufferedWriter(osw);
-            pw = new PrintWriter(bw, autoFlush);
-            tmp = s1.getValue(input, d);
-            pw.write(tmp);
+        Dataset<Row> res = s.getValue(input, dir[0]);
+        for (String d: dir) {
+            res = res.union(s.getValue(input, d));
         }
+        res.toJSON().javaRDD().saveAsTextFile(output);
     }
 
 }
