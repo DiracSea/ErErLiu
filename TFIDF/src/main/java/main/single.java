@@ -237,7 +237,7 @@ public class single {
     }
     public static void similarDataset (Dataset<Row> res) {
         SparkSession spark = initSpark();
-        spark.conf().set("spark.sql.crossJoin.enabled", "true")
+        spark.conf().set("spark.sql.crossJoin.enabled", "true"); 
         Dataset<Row> reddit = res.filter("label = 'Reddit'");
         Dataset<Row> twitter = res.filter("label = 'Twitter'");
 
