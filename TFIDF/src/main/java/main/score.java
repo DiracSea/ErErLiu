@@ -22,7 +22,7 @@ public class score {
     public Dataset<Row> getValue(String path, String src) {
         String col = "score";
         SparkSession spark = initSpark();
-        Dataset<Row> df = spark.read().json(path+"/"+src+"/COMMENTS_"+src+".json").select(col);
+        Dataset<Row> df = spark.read().json(path+"/"+src+"/COMMENTS_"+src+".json").select(col).limit(1);
         df.describe().show();
 
         Dataset<Row> des = df
@@ -47,6 +47,7 @@ public class score {
 
         Dataset<Row> res = s.getValue(input, dir[0]);
         for (String d: dir) {
+            if (d.equals("movie")) break;
             res = res.union(s.getValue(input, d));
         }
         res.coalesce(1);

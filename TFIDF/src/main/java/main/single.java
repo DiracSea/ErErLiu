@@ -272,7 +272,6 @@ public class single {
         String[] directories = file.list(new FilenameFilter() {
             @Override
             public boolean accept(File current, String name) {
-                if(name.equals("movies")) return false;
                 return new File(current, name).isDirectory();
             }
         });
