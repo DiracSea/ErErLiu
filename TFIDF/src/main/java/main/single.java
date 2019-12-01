@@ -90,7 +90,11 @@ public class single {
     public Dataset<Row> initTwitter(String path) {
         JavaSparkContext sc = new JavaSparkContext(new SparkConf());
         JavaRDD<String> in = sc.textFile(path);
-
+        SparkSession spark = SparkSession
+                .builder()
+                .appName("TF.IDF")
+                // .config("")
+                .getOrCreate();
         JavaRDD<TW> table = in
                 .map(line -> {
                     String[] parts = line.split(";");
@@ -102,11 +106,7 @@ public class single {
                             .replaceAll("']",""));
                     return tw;
                 });
-        SparkSession spark = SparkSession
-                .builder()
-                .appName("TF.IDF")
-                // .config("")
-                .getOrCreate();
+
         Dataset<Row> twDF = spark.createDataFrame(table, TW.class);
         twDF.show(5);
 
@@ -122,6 +122,7 @@ public class single {
                 .transform(wordsData);
                 // .filter("filtered != null");
         wordFiltered.show(5);
+        sc.close(); spark.close();
         return wordFiltered;
     }
     public Dataset<Row> getValue(String path, String tw) {
@@ -197,7 +198,7 @@ public class single {
         String input = args[0], output = args[1], tw = args[2];
         single s = new single();
         String[] dir = s.findDir(input);
-        s.getValue(input, tw); 
+        s.getValue(input, tw);
 
         boolean append = true;
         boolean autoFlush = true;
