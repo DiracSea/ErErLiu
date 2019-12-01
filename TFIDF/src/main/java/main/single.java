@@ -15,6 +15,7 @@ import org.apache.spark.ml.linalg.Vector;
 import org.apache.spark.ml.linalg.Vectors;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.api.java.UDF1;
+import org.apache.spark.sql.expressions.Window;
 import scala.Tuple2;
 
 
@@ -273,10 +274,11 @@ public class single {
                 similarTextDataset.toJavaRDD(),
                 SimilarText.class
         );
-        sim.select("label1", "label2", "similarity").createOrReplaceTempView("tmp");
-        Dataset<Row> ds = spark.sql("select label1, label2, similarity from" +
-                "(select a.*, row_number() over (partition by label1 order by similarity asc) " +
-                "as seqnum from tmp) a where seqnum <= 5 order by a.similarity asc");
+        // sim.select("label1", "label2", "similarity").createOrReplaceTempView("tmp");
+        Dataset<Row> ds = sim.withColumn("rank",
+                functions.rank().over(Window.partitionBy("label1").orderBy("similarity")))
+                .filter("rank <= 3")
+                .drop("rank");
         ds.show(5);
         return ds;
     }
