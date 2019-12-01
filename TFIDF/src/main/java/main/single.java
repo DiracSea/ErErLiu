@@ -236,8 +236,8 @@ public class single {
         }
     }
     public static void similarDataset (Dataset<Row> res) {
-        Dataset<Row> reddit = res.filter("label = 'Reddit'").limit(5);
-        Dataset<Row> twitter = res.filter("label = 'Twitter'").limit(5);
+        Dataset<Row> reddit = res.filter("label = 'Reddit'");
+        Dataset<Row> twitter = res.filter("label = 'Twitter'");
 
 //        UDF1 dot = new UDF1<Row[], double[]>() {
 //            @Override
