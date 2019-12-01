@@ -109,9 +109,8 @@ public class multi {
         );
 
         Dataset<Row> rank = keyword
-                .groupBy(col("key")).avg("value").alias("v")
-                .orderBy(col("v").desc());
-        return rank.select("key","v");
+                .groupBy(col("key")).agg(avg("value").alias("v"));
+        return rank.select("key","v").orderBy(col("v").desc());
     }
 
     public static void main(String[] args) {

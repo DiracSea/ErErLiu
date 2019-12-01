@@ -254,7 +254,8 @@ public class single {
 //            }
 //        };
 
-        Dataset<SimilarText> similarTextDataset = twitter.join(reddit)
+        Dataset<SimilarText> similarTextDataset = twitter
+                .join(reddit)
                 .map(r -> {
                     String label1 = r.getString(0);
                     String label2 = r.getString(2);
@@ -271,6 +272,7 @@ public class single {
                     similarText.setSimilarity(sim);
                     return similarText;
                 }, Encoders.bean(SimilarText.class));
+
         Dataset<Row> sim = spark.createDataFrame(
                 similarTextDataset.toJavaRDD(),
                 SimilarText.class
@@ -283,17 +285,16 @@ public class single {
                 .agg(max("similarity").alias("max")
                         , min("similarity").alias("min")
                         , avg("similarity").alias("avg")
-                        , stddev("similarity").alias("dev"))
-                .select("label", "max", "min", "avg", "dev");
+                        , stddev("similarity").alias("dev"));
         Dataset<Row> ds2 = sim
                 .groupBy(col("label1").alias("label"))
                 .agg(max("similarity").alias("max")
                         , min("similarity").alias("min")
                         , avg("similarity").alias("avg")
-                        , stddev("similarity").alias("dev"))
-                .select("label", "max", "min", "avg", "dev");
+                        , stddev("similarity").alias("dev"));
 
-        Dataset<Row> ds = ds1.union(ds1);
+        Dataset<Row> ds = ds1.select("label", "max", "min", "avg", "dev")
+                .union(ds2.select("label", "max", "min", "avg", "dev"));
         ds.show(5);
         return ds;
     }
