@@ -141,7 +141,7 @@ public class single {
         wordFiltered.show(5);
         return wordFiltered.select("label", "filtered");
     }
-    public Dataset<Row> getValue(String path, String tw) {
+    public static Dataset<Row> getValue(String path, String tw) {
 
         SparkSession spark = initSpark();
 
@@ -297,14 +297,14 @@ public class single {
 
     public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
         String input = args[0], output = args[1], tw = args[2], output1 = args[3];
-        single s = new single();
-        String[] dir = s.findDir(input);
-        // similarDataset(s.getValue(input, tw));
-        Dataset<Row> res = s.getValue(input, tw);
+
+        // similarDataset(getValue(input, tw));
+        Dataset<Row> res = getValue(input, tw);
+        Dataset<Row> tmp = res;
         res.toJSON().javaRDD().repartition(1).saveAsTextFile(output);
 
-        Dataset<Row> sim = similarDataset(res);
-        res.toJSON().javaRDD().repartition(1).saveAsTextFile(output1);
+        Dataset<Row> sim = similarDataset(tmp);
+        sim.toJSON().javaRDD().repartition(1).saveAsTextFile(output1);
 /*        boolean append = true;
         boolean autoFlush = true;
         String charset = "UTF-8";
