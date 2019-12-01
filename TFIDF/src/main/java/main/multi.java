@@ -62,7 +62,7 @@ public class multi {
                 .select("filtered", "features").filter("label = 'Twitter'")
                 .map(r -> {
                     String fuckU = r.getAs(0);
-                    String [] label = fuckU.split(",")
+                    String [] label = fuckU.split(","); 
                     Vector tmp = r.getAs(1);
                     double[] value = tmp.toSparse().values();
 
