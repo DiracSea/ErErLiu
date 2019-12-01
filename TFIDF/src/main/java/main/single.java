@@ -119,7 +119,7 @@ public class single {
                 .setOutputCol("filtered");
         Dataset<Row> wordFiltered = remover
                 .transform(wordsData)
-                .filter("filtered != ''");
+                .filter("filtered != null");
         wordFiltered.show(5);
         return wordFiltered;
     }
