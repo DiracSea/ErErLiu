@@ -64,7 +64,8 @@ public class multi {
                 .select("filtered", "features").filter("label = 'Twitter'")
                 .javaRDD()
                 .map(r -> {
-                        String fuckU = ((Row) r).getAs( 0).toString();
+                        String sb = r.getString(0);
+                        String fuckU = r.getAs( 0).toString();
                         String[] label = fuckU.split(",");
                         Vector tmp = r.getAs(1);
                         double[] value = tmp.toSparse().values();
