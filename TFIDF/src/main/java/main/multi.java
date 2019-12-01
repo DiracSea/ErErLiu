@@ -2,6 +2,7 @@ package main;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 
 
 import org.apache.spark.api.java.JavaRDD;
@@ -64,9 +65,11 @@ public class multi {
                 .select("filtered", "features").filter("label = 'Twitter'")
                 .javaRDD()
                 .map(r -> {
-                        String sb = r.getString(0);
-                        String fuckU = r.getAs( 0).toString();
-                        String[] label = fuckU.split(",");
+                        List<Object> fuckU = r.getList(0);
+                        String[] label = new String[fuckU.size()];
+                        for (int i = 0; i < fuckU.size(); i++) {
+                            label[i] = fuckU.get(i).toString();
+                        }
                         Vector tmp = r.getAs(1);
                         double[] value = tmp.toSparse().values();
 
