@@ -1,21 +1,31 @@
 package main;
 
 import java.io.*;
+import java.util.ArrayList;
+
+import jdk.internal.net.http.frame.DataFrame;
 import org.apache.spark.ml.linalg.BLAS;
 import org.apache.spark.ml.linalg.Vector;
 import org.apache.spark.ml.linalg.Vectors;
 import org.apache.spark.sql.*;
+import org.apache.spark.sql.api.java.UDF2;
+import org.apache.spark.sql.types.DataTypes;
+import scala.collection.Seq;
+
+import static org.apache.spark.sql.functions.*;
+
+import javax.xml.crypto.Data;
 
 public class multi {
     public static class KeyWords implements Serializable {
-        private String key;
+        private String[] key;
         private double[] value;
 
-        public String getKey() {
+        public String[] getKey() {
             return key;
         }
 
-        public void setKey(String key) {
+        public void setKey(String[] key) {
             this.key = key;
         }
 
@@ -27,13 +37,33 @@ public class multi {
             this.value = value;
         }
     }
-    public static void slice(String path, String src, String in){
+    public static class KeyWord implements Serializable {
+        private String key;
+        private double value;
+
+        public String getKey() {
+            return key;
+        }
+
+        public void setKey(String key) {
+            this.key = key;
+        }
+
+        public double getValue() {
+            return value;
+        }
+
+        public void setValue(double value) {
+            this.value = value;
+        }
+    }
+    public static Dataset<Row> slice(String path, String in){
         SparkSession spark = single.initSpark();
         Dataset<Row> df = single.getValue(path, in);
         Dataset<KeyWords> key1 = df
                 .select("filtered", "features").filter("label = 'Twitter'")
                 .map(r -> {
-                    String label = r.getString(0);
+                    String[] label = r.getString(0).split(",");
                     Vector tmp = r.getAs(1);
                     double[] value = tmp.toSparse().values();
 
@@ -46,11 +76,48 @@ public class multi {
                 key1.toJavaRDD(),
                 KeyWords.class
         ).withColumn("id", functions.monotonically_increasing_id());
-        Dataset<Row> keyword = key2.javaRDD().flatMap((x, y) -> ).drop("id");
+
+        UDF2 concatItems = new UDF2<Seq<String>, Seq<Double>, Seq<String>>() {
+            public Seq<String> call(final Seq<String> col1, final Seq<Double> col2) throws Exception {
+                ArrayList zipped = new ArrayList();
+
+                for (int i = 0, listSize = col1.size(); i < listSize; i++) {
+                    String subRow = col1.apply(i) + ";" + col2.apply(i).toString();
+                    zipped.add(subRow);
+                }
+
+                return scala.collection.JavaConversions.asScalaBuffer(zipped);
+            }
+        };
+        spark.udf().register("concatItems",concatItems, DataTypes.StringType);
+        Dataset<KeyWord> df2 = key2
+                .select(col("id"),
+                        callUDF("concatItems", col("key"), col("value")).alias("key_value"))
+                .map(s -> {
+                    String[] info = s.getString(1).split(";");
+                    String key = info[0];
+                    double value = Double.parseDouble(info[1]);
+
+                    KeyWord keyWord = new KeyWord();
+                    keyWord.setKey(key);
+                    keyWord.setValue(value);
+
+                    return keyWord;
+                }, Encoders.bean(KeyWord.class));
+
+        Dataset<Row> keyword = spark.createDataFrame(
+                df2.toJavaRDD(),
+                KeyWord.class
+        );
+
+        Dataset<Row> rank = keyword.orderBy(col("features").desc());
+        return rank;
     }
 
     public static void main(String[] args) {
         String input = args[0], output = args[1], tw = args[2], output1 = args[3];
+        Dataset<Row> df = slice(input, tw);
+        df.toJSON().javaRDD().repartition(1).saveAsTextFile(output);
 
     }
 
