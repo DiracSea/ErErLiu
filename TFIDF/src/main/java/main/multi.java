@@ -92,9 +92,9 @@ public class multi {
                 .select(col("id"),
                         callUDF("concatItems", col("key"), col("value")).alias("key_value"))
                 .map(s -> {
-                    String[] info = s.getString(1).split(";");
-                    String key = info[0];
-                    double value = Double.parseDouble(info[1]);
+                    String info = s.getAs(1);
+                    String key = info.split(";")[0];
+                    double value = Double.parseDouble(info.split(";")[1]);
 
                     KeyWord keyWord = new KeyWord();
                     keyWord.setKey(key);
@@ -116,7 +116,7 @@ public class multi {
     public static void main(String[] args) {
         String input = args[0], output = args[1], tw = args[2], output1 = args[3];
         Dataset<Row> df = slice(input, tw);
-        df.toJSON().javaRDD().repartition(1).saveAsTextFile(output);
+        df.toJSON().javaRDD().saveAsTextFile(output);
 
     }
 

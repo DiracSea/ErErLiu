@@ -19,6 +19,8 @@ import org.apache.spark.sql.expressions.Window;
 import scala.Tuple2;
 import static org.apache.spark.sql.functions.*;
 
+import scala.collection.Seq;
+
 
 public class single {
     private static SparkSession spark = null;
@@ -257,8 +259,8 @@ public class single {
         Dataset<SimilarText> similarTextDataset = twitter
                 .join(reddit)
                 .map(r -> {
-                    String label1 = r.getString(0);
-                    String label2 = r.getString(2);
+                    String label1 = r.getAs(0);
+                    String label2 = r.getAs(2);
                     Vector fTwitter = r.getAs(1);
                     Vector fR = r.getAs(3);
                     double ddot = BLAS.dot(fTwitter.toSparse(), fR.toSparse());
@@ -317,32 +319,15 @@ public class single {
         // similarDataset(getValue(input, tw));
         Dataset<Row> res = getValue(input, tw);
         Dataset<Row> tmp = res;
-        res.toJSON().javaRDD().repartition(1).saveAsTextFile(output);
+        res.toJSON().javaRDD().saveAsTextFile(output);
 
         Dataset<Row> sim = similarDataset(tmp);
-        sim.toJSON().javaRDD().repartition(1).saveAsTextFile(output1);
+        sim.toJSON().javaRDD().saveAsTextFile(output1);
 /*        boolean append = true;
         boolean autoFlush = true;
         String charset = "UTF-8";
         String filePath = output;
         String tmp;*/
 
-/*        File file = new File(filePath);
-        FileOutputStream fos;
-        OutputStreamWriter osw;
-        BufferedWriter bw;
-        PrintWriter pw;
-
-
-        for (String d : dir) {
-            if (d.equals("movie")) continue;
-            if(!file.getParentFile().exists()) file.getParentFile().mkdirs();
-            fos = new FileOutputStream(file, append);
-            osw = new OutputStreamWriter(fos, charset);
-            bw = new BufferedWriter(osw);
-            pw = new PrintWriter(bw, autoFlush);
-            pw.write(d);
-            break;
-        }*/
     }
 }
