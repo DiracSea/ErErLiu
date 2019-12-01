@@ -17,6 +17,7 @@ import org.apache.spark.sql.*;
 import org.apache.spark.sql.api.java.UDF1;
 import org.apache.spark.sql.expressions.Window;
 import scala.Tuple2;
+import static org.apache.spark.sql.functions.*;
 
 
 public class single {
@@ -275,10 +276,24 @@ public class single {
                 SimilarText.class
         );
         // sim.select("label1", "label2", "similarity").createOrReplaceTempView("tmp");
-        Dataset<Row> ds = sim.withColumn("rank",
-                functions.rank().over(Window.partitionBy("label1").orderBy("similarity")))
-                .filter("rank <= 3")
-                .drop("rank");
+/*        .withColumn("rank",
+                functions.rank().over(Window.partitionBy("label1").orderBy("similarity")))*/
+        Dataset<Row> ds1 = sim
+                .groupBy(col("label1").alias("label"))
+                .agg(max("similarity").alias("max")
+                        , min("similarity").alias("min")
+                        , avg("similarity").alias("avg")
+                        , stddev("similarity").alias("dev"))
+                .select("label", "max", "min", "avg", "dev");
+        Dataset<Row> ds2 = sim
+                .groupBy(col("label1").alias("label"))
+                .agg(max("similarity").alias("max")
+                        , min("similarity").alias("min")
+                        , avg("similarity").alias("avg")
+                        , stddev("similarity").alias("dev"))
+                .select("label", "max", "min", "avg", "dev");
+
+        Dataset<Row> ds = ds1.union(ds1);
         ds.show(5);
         return ds;
     }

@@ -108,8 +108,10 @@ public class multi {
                 KeyWord.class
         );
 
-        Dataset<Row> rank = keyword.orderBy(col("features").desc());
-        return rank;
+        Dataset<Row> rank = keyword
+                .groupBy(col("key")).avg("value").alias("v")
+                .orderBy(col("v").desc());
+        return rank.select("key","v");
     }
 
     public static void main(String[] args) {
