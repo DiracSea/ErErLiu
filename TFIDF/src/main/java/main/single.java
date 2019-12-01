@@ -3,11 +3,18 @@ package main;
 import java.io.*;
 import java.util.Arrays;
 
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.Function;
 import org.apache.spark.ml.feature.*;
 import org.apache.spark.sql.*;
+import scala.Tuple2;
 
 
 public class single {
+
     public Dataset<Row> initReddit(String path, String src) {
         SparkSession spark = SparkSession
                 .builder()
@@ -47,10 +54,79 @@ public class single {
         return wordFiltered;
     }
 
-    public Dataset<Row> initTwitter(String path) {
-        return null;
+/*    public Tuple2<String, String[]> tw(String line) {
+        String[] str = line
+*//*                .replace(" ;['",";")
+                .replace("']","")
+                .replace("', '", ",")*//*
+                .split(";");
+        Tuple2<String, String[]> res = new Tuple2<String, String[]>(
+                str[0].toString(), str[1].split(",")
+        );
+        return res;
+    }*/
+
+    public static class TW implements Serializable {
+        private String label;
+        private String value;
+
+        public String getValue() {
+            return value;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public void setLabel(String label) {
+            this.label = label;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
     }
-    public Dataset<Row> getValue(String path, String src, String input) {
+
+    public Dataset<Row> initTwitter(String path) {
+        JavaSparkContext sc = new JavaSparkContext(new SparkConf());
+        JavaRDD<String> in = sc.textFile(path);
+
+        JavaRDD<TW> table = in
+                .map(new Function<String, TW>() {
+                    @Override
+                    public TW call(String line) throws Exception {
+                        String[] parts = line.split(";");
+                        TW tw = new TW();
+                        tw.setValue(parts[0].trim());
+                        tw.setLabel(parts[1]
+                                .replaceAll("\\['", "")
+                                .replaceAll("','", " ")
+                                .replaceAll("']",""));
+                        return tw;
+                    }
+                });
+        SparkSession spark = SparkSession
+                .builder()
+                .appName("TF.IDF")
+                // .config("")
+                .getOrCreate();
+        Dataset<Row> twDF = spark.createDataFrame(table, TW.class);
+
+        Tokenizer tokenizer = new Tokenizer()
+                .setInputCol("value")
+                .setOutputCol("token");
+        Dataset<Row> wordsData = tokenizer.transform(twDF);
+
+        StopWordsRemover remover = new StopWordsRemover()
+                .setInputCol("token")
+                .setOutputCol("filtered");
+        Dataset<Row> wordFiltered = remover
+                .transform(wordsData)
+                .filter("filtered != ''");
+        wordFiltered.show(5);
+        return wordFiltered;
+    }
+    public Dataset<Row> getValue(String path, String src, String tw) {
 
         SparkSession spark = SparkSession
                 .builder()
@@ -65,7 +141,9 @@ public class single {
 			spark
 		 */
         single s = new single();
-        String[] dir = s.findDir(input);
+        Dataset<Row> reddit = s.initReddit(path, src);
+        Dataset<Row> twitter = s.initTwitter(tw);
+        String[] dir = s.findDir(path);
         for (String d : dir) {
 
         }
@@ -101,7 +179,7 @@ public class single {
         // Get Top N data and filter deleted row
 
         // SparseVector s = new SparseVector();
-        return rescaledData.select("filtered", "");
+        return rescaledData.select("filtered", "features");
     }
 
     public String[] findDir(String path) {
@@ -117,9 +195,10 @@ public class single {
     }
 
     public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
-        String input = args[0], output = args[1];
+        String input = args[0], output = args[1], tw = args[2];
         single s = new single();
         String[] dir = s.findDir(input);
+        s.initTwitter(tw);
 
         boolean append = true;
         boolean autoFlush = true;
