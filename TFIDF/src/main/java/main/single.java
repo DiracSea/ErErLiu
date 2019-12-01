@@ -9,6 +9,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.ForeachFunction;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.ml.feature.*;
 import org.apache.spark.ml.linalg.BLAS;
 import org.apache.spark.ml.linalg.Vector;
@@ -258,21 +259,23 @@ public class single {
 
         Dataset<SimilarText> similarTextDataset = twitter
                 .join(reddit)
-                .map(r -> {
-                    String label1 = r.getAs(0);
-                    String label2 = r.getAs(2);
-                    Vector fTwitter = r.getAs(1);
-                    Vector fR = r.getAs(3);
-                    double ddot = BLAS.dot(fTwitter.toSparse(), fR.toSparse());
-                    double v1 = Vectors.norm(fTwitter.toSparse(), 2.0);
-                    double v2 = Vectors.norm(fR.toSparse(), 2.0);
-                    double sim = ddot / (v1*v2);
+                .map(new MapFunction<Row, SimilarText>(){
+                    public SimilarText call(Row r) {
+                        String label1 = r.getAs(0);
+                        String label2 = r.getAs(2);
+                        Vector fTwitter = r.getAs(1);
+                        Vector fR = r.getAs(3);
+                        double ddot = BLAS.dot(fTwitter.toSparse(), fR.toSparse());
+                        double v1 = Vectors.norm(fTwitter.toSparse(), 2.0);
+                        double v2 = Vectors.norm(fR.toSparse(), 2.0);
+                        double sim = ddot / (v1 * v2);
 
-                    SimilarText similarText = new SimilarText();
-                    similarText.setLabel1(label1);
-                    similarText.setLabel2(label2);
-                    similarText.setSimilarity(sim);
-                    return similarText;
+                        SimilarText similarText = new SimilarText();
+                        similarText.setLabel1(label1);
+                        similarText.setLabel2(label2);
+                        similarText.setSimilarity(sim);
+                        return similarText;
+                    }
                 }, Encoders.bean(SimilarText.class));
 
         Dataset<Row> sim = spark.createDataFrame(

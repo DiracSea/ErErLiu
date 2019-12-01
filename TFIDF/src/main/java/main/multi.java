@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.ArrayList;
 
 
+import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.ml.linalg.Vector;
 
 import org.apache.spark.sql.*;
@@ -60,16 +61,18 @@ public class multi {
         Dataset<Row> df = single.getValue(path, in);
         Dataset<KeyWords> key1 = df
                 .select("filtered", "features").filter("label = 'Twitter'")
-                .map(r -> {
-                    String fuckU = r.getAs(0);
-                    String [] label = fuckU.split(","); 
-                    Vector tmp = r.getAs(1);
-                    double[] value = tmp.toSparse().values();
+                .map(new MapFunction<Row, KeyWords>(){
+                    public KeyWords call(Row r) {
+                        String fuckU = r.getAs( 0);
+                        String[] label = fuckU.split(",");
+                        Vector tmp = r.getAs(1);
+                        double[] value = tmp.toSparse().values();
 
-                    KeyWords keyWords = new KeyWords();
-                    keyWords.setKey(label);
-                    keyWords.setValue(value);
-                    return keyWords;
+                        KeyWords keyWords = new KeyWords();
+                        keyWords.setKey(label);
+                        keyWords.setValue(value);
+                        return keyWords;
+                    }
                 }, Encoders.bean(KeyWords.class));
         Dataset<Row> key2 = spark.createDataFrame(
                 key1.toJavaRDD(),
