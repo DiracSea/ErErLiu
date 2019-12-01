@@ -68,9 +68,9 @@ public class single {
 
     public static class TW implements Serializable {
         private String label;
-        private String value;
+        private String[] value;
 
-        public String getValue() {
+        public String[] getValue() {
             return value;
         }
 
@@ -82,7 +82,7 @@ public class single {
             this.label = label;
         }
 
-        public void setValue(String value) {
+        public void setValue(String[] value) {
             this.value = value;
         }
     }
@@ -95,11 +95,12 @@ public class single {
                 .map(line -> {
                     String[] parts = line.split(";");
                     TW tw = new TW();
-                    tw.setValue(parts[0].trim());
-                    tw.setLabel(parts[1]
+                    tw.setLabel(parts[0].trim());
+                    tw.setValue(parts[1]
                             .replaceAll("\\['", "")
-                            .replaceAll("','", " ")
-                            .replaceAll("']",""));
+                            .replaceAll("','", ",")
+                            .replaceAll("']","")
+                            .split(","));
                     return tw;
                 });
         SparkSession spark = SparkSession
