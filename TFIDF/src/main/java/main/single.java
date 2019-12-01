@@ -14,13 +14,26 @@ import scala.Tuple2;
 
 
 public class single {
+    private static SparkSession spark = null;
+    private static JavaSparkContext sc = null;
+    public static JavaSparkContext initContext(){
+        if (sc == null)
+            sc = new JavaSparkContext(new SparkConf());
+        return sc;
+    }
 
-    public Dataset<Row> initReddit(String path, String src) {
-        SparkSession spark = SparkSession
-                .builder()
-                .appName("TF.IDF")
-                // .config("")
-                .getOrCreate();
+    public static SparkSession initSpark() {
+        if (spark == null) {
+            spark = SparkSession
+                    .builder()
+                    .appName("TF.IDF")
+                    .getOrCreate();
+        }
+        return spark;
+    }
+
+    public static Dataset<Row> initReddit(String path, String src) {
+        SparkSession spark = initSpark();
 
         Dataset<Row> df = spark.read()
                 .json(path+"/"+src+"/COMMENTS_"+src+".json")
@@ -87,14 +100,11 @@ public class single {
         }
     }
 
-    public Dataset<Row> initTwitter(String path) {
-        JavaSparkContext sc = new JavaSparkContext(new SparkConf());
+    public static Dataset<Row> initTwitter(String path) {
+        JavaSparkContext sc = initContext();
         JavaRDD<String> in = sc.textFile(path);
-        SparkSession spark = SparkSession
-                .builder()
-                .appName("TF.IDF")
-                // .config("")
-                .getOrCreate();
+        SparkSession spark = initSpark();
+
         JavaRDD<TW> table = in
                 .map(line -> {
                     String[] parts = line.split(";");
@@ -122,16 +132,12 @@ public class single {
                 .transform(wordsData);
                 // .filter("filtered != null");
         wordFiltered.show(5);
-        sc.close(); spark.close();
+        sc.close();
         return wordFiltered;
     }
     public Dataset<Row> getValue(String path, String tw) {
 
-        SparkSession spark = SparkSession
-                .builder()
-                .appName("TF.IDF")
-                // .config("")
-                .getOrCreate();
+        SparkSession spark = initSpark();
 
         // final HashingTF hTF = new HashingTF();
 		/*
@@ -139,13 +145,13 @@ public class single {
 			spark
 		 */
         single s = new single();
-        Dataset<Row> twitter = s.initTwitter(tw);
+        Dataset<Row> twitter = initTwitter(tw);
         Dataset<Row> reddit;
 
         String[] dir = s.findDir(path);
         for (String d : dir) {
             if (d.equals("movie")) continue;
-            reddit = s.initReddit(path, d);
+            reddit = initReddit(path, d);
             twitter.union(reddit);
         }
         Dataset<Row> df = twitter;
