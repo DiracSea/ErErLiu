@@ -119,7 +119,7 @@ public class single {
                 .setInputCol("token")
                 .setOutputCol("filtered");
         Dataset<Row> wordFiltered = remover
-                .transform(wordsData)
+                .transform(wordsData); 
                 // .filter("filtered != null");
         wordFiltered.show(5);
         return wordFiltered;
