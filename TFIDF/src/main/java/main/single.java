@@ -261,8 +261,8 @@ public class single {
 
         JavaRDD<SimilarText> similarTextDataset = jj.toJavaRDD()
                 .map(r -> {
-                        String label1 = r.getAs(0);
-                        String label2 = r.getAs(2);
+                        String label1 = ((Row) r).getAs(0).toString();
+                        String label2 = ((Row) r).getAs(2).toString();
                         Vector fTwitter = r.getAs(1);
                         Vector fR = r.getAs(3);
                         double ddot = BLAS.dot(fTwitter.toSparse(), fR.toSparse());
