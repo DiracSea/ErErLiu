@@ -92,18 +92,15 @@ public class single {
         JavaRDD<String> in = sc.textFile(path);
 
         JavaRDD<TW> table = in
-                .map(new Function<String, TW>() {
-                    @Override
-                    public TW call(String line) throws Exception {
-                        String[] parts = line.split(";");
-                        TW tw = new TW();
-                        tw.setValue(parts[0].trim());
-                        tw.setLabel(parts[1]
-                                .replaceAll("\\['", "")
-                                .replaceAll("','", " ")
-                                .replaceAll("']",""));
-                        return tw;
-                    }
+                .map(line -> {
+                    String[] parts = line.split(";");
+                    TW tw = new TW();
+                    tw.setValue(parts[0].trim());
+                    tw.setLabel(parts[1]
+                            .replaceAll("\\['", "")
+                            .replaceAll("','", " ")
+                            .replaceAll("']",""));
+                    return tw;
                 });
         SparkSession spark = SparkSession
                 .builder()
