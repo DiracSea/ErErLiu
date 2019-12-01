@@ -55,8 +55,8 @@ public class score {
         BufferedWriter bw;
         PrintWriter pw;
         for (String d : dir) {
-            if (d.equals("movie")) continue;
-            if(!file.getParentFile().exists()) file.getParentFile().mkdirs();
+            if (d.equals("movies")) continue;
+            if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
             fos = new FileOutputStream(file, append);
             osw = new OutputStreamWriter(fos, charset);
             bw = new BufferedWriter(osw);

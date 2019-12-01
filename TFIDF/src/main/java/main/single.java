@@ -40,7 +40,7 @@ public class single {
 
         Dataset<Row> df = spark.read()
                 .json(path+"/"+src+"/COMMENTS_"+src+".json")
-                .select("body").limit(5);
+                .select("body").limit(1);
         Dataset<Row> new_df = df
                 .withColumn("body", functions.regexp_replace(df.col("body"),"[^a-zA-Z.'?!]+"," "));
         Dataset<Row> new_df1 = new_df
@@ -152,8 +152,10 @@ public class single {
         Dataset<Row> reddit;
 
         String[] dir = s.findDir(path);
+        int i = 0;
         for (String d : dir) {
-            if (d.equals("movie")) continue;
+            i += 1;
+            if (d.equals("movie") || i > 10) break;
             reddit = initReddit(path, d);
             twitter = twitter.union(reddit);
         }
