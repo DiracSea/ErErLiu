@@ -153,6 +153,7 @@ public class single {
             if (d.equals("movie")) continue;
             reddit = initReddit(path, d);
             twitter.union(reddit);
+            twitter.show(5);
         }
         Dataset<Row> df = twitter;
 
