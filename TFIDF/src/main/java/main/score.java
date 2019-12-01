@@ -1,7 +1,5 @@
 package main;
 
-import org.apache.spark.SparkConf;
-import org.apache.spark.SparkContext;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -47,13 +45,12 @@ public class score {
         score s1 = new score();
         String[] dir = s.findDir(input);
 
+        Dataset<Row> res = s1.getValue(input, dir[0]);
         for (String d: dir) {
             if (d.equals("movie")) break;
-            Dataset<Row> res = s1.getValue(input, d);
-            res.toJSON().javaRDD().saveAsTextFile(output);
+            res.union(s1.getValue(input, d));
         }
-
-
+        res.toJSON().javaRDD().saveAsTextFile(output);
     }
 
 }
