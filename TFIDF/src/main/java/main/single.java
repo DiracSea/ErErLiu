@@ -37,6 +37,8 @@ public class single {
                 .filter("body != ''");
         new_df2.collect();
         new_df2.show(5);
+        String[] del = new String[1];
+        del[0] = "deleted";
 
         Tokenizer tokenizer = new Tokenizer()
                 .setInputCol("body")
@@ -49,7 +51,7 @@ public class single {
         Dataset<Row> wordFiltered = remover
                 .transform(wordsData)
                 .filter("filtered != null")
-                .filter("filtered != [deleted]")
+                .filter("filtered != ['deleted']")
                 .withColumn("label", functions.lit(src));
         wordFiltered.show(5);
         return wordFiltered;
