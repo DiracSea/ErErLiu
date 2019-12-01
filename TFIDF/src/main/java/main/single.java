@@ -105,7 +105,7 @@ public class single {
 
         JavaSparkContext sc = new JavaSparkContext(spark.sparkContext());
         JavaRDD<String> in = sc.textFile(path);
-        
+
         JavaRDD<TW> table = in
                 .map(line -> {
                     String[] parts = line.split(";");
@@ -133,7 +133,6 @@ public class single {
                 .transform(wordsData);
                 // .filter("filtered != null");
         wordFiltered.show(5);
-        sc.close();
         return wordFiltered;
     }
     public Dataset<Row> getValue(String path, String tw) {
