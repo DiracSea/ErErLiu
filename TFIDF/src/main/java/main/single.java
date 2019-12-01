@@ -48,7 +48,7 @@ public class single {
                 .setOutputCol("filtered");
         Dataset<Row> wordFiltered = remover
                 .transform(wordsData)
-                .filter("filtered != null")
+                // .filter("filtered != null")
                 .withColumn("label", functions.lit(src));
         wordFiltered.show(5);
         return wordFiltered;
@@ -120,7 +120,7 @@ public class single {
                 .setOutputCol("filtered");
         Dataset<Row> wordFiltered = remover
                 .transform(wordsData)
-                .filter("filtered != null");
+                // .filter("filtered != null");
         wordFiltered.show(5);
         return wordFiltered;
     }
