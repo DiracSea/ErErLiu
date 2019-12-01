@@ -32,13 +32,11 @@ public class single {
 
         Dataset<Row> new_df2 = new_df1
                 .withColumn("body", functions.regexp_replace(new_df1.col("body"), "\\s+", " "))
-                .filter("body != ' deleted'")
+                .filter("body != '\\s+deleted'")
                 .filter("body != 'deleted'")
                 .filter("body != ''");
         new_df2.collect();
         new_df2.show(5);
-        String[] del = new String[1];
-        del[0] = "deleted";
 
         Tokenizer tokenizer = new Tokenizer()
                 .setInputCol("body")
@@ -51,7 +49,6 @@ public class single {
         Dataset<Row> wordFiltered = remover
                 .transform(wordsData)
                 .filter("filtered != null")
-                .filter("filtered != "+del)
                 .withColumn("label", functions.lit(src));
         wordFiltered.show(5);
         return wordFiltered;
