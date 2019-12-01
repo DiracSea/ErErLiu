@@ -123,10 +123,19 @@ public class multi {
         return rank.select("key","v").orderBy(col("v").desc());
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         String input = args[0], output = args[1], tw = args[2], output1 = args[3];
         Dataset<Row> df = slice(input, tw);
         df.toJSON().javaRDD().saveAsTextFile(output);
+        File file = new File(output);
+        FileOutputStream fos = new FileOutputStream(file);
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos));
+
+        Dataset<Row> res = slice(input, tw);
+        Dataset<String> res1 = res.toJSON();
+        res1.foreach(row -> writer.write(row));
+        writer.close();
+        fos.close();
 
     }
 

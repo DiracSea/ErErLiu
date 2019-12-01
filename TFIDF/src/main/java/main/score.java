@@ -52,6 +52,7 @@ public class score {
         for (String d: dir) {
             if (d.equals("movie")) break;
             res = s1.getValue(input, d).toJSON().toString();
+            System.out.println(res);
             writer.write(res);
         }
         writer.close();
