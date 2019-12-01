@@ -3,10 +3,9 @@ package main;
 import java.io.*;
 import java.util.ArrayList;
 
-import jdk.internal.net.http.frame.DataFrame;
-import org.apache.spark.ml.linalg.BLAS;
+
 import org.apache.spark.ml.linalg.Vector;
-import org.apache.spark.ml.linalg.Vectors;
+
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.api.java.UDF2;
 import org.apache.spark.sql.types.DataTypes;
@@ -14,7 +13,6 @@ import scala.collection.Seq;
 
 import static org.apache.spark.sql.functions.*;
 
-import javax.xml.crypto.Data;
 
 public class multi {
     public static class KeyWords implements Serializable {
