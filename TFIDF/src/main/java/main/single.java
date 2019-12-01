@@ -165,7 +165,7 @@ public class single {
             if (d.equals("movie") || i > 10) break;
             reddit = initReddit(path, d);
 
-            twitter.union(reddit);
+            twitter = twitter.union(reddit);
         }
         Dataset<Row> df = twitter;
 

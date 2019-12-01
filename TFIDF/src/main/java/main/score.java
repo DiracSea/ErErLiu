@@ -48,7 +48,7 @@ public class score {
         Dataset<Row> res = s1.getValue(input, dir[0]);
         for (String d: dir) {
             if (d.equals("movie")) break;
-            res.union(s1.getValue(input, d));
+            res = res.union(s1.getValue(input, d));
         }
         res.toJSON().javaRDD().saveAsTextFile(output);
     }
