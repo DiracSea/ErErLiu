@@ -258,6 +258,7 @@ public class single {
 //            }
 //        };
         Dataset<Row> jj = twitter.join(reddit);
+        jj.show(10);
 
         JavaRDD<SimilarText> similarTextDataset = jj.toJavaRDD()
                 .map(r -> {
@@ -281,6 +282,7 @@ public class single {
                 similarTextDataset,
                 SimilarText.class
         );
+        sim.show(10);
         // sim.select("label1", "label2", "similarity").createOrReplaceTempView("tmp");
 /*        .withColumn("rank",
                 functions.rank().over(Window.partitionBy("label1").orderBy("similarity")))*/
@@ -315,16 +317,30 @@ public class single {
         return directories;
     }
 
-    public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
+    public static void main(String[] args) throws IOException {
         String input = args[0], output = args[1], tw = args[2], output1 = args[3];
 
         // similarDataset(getValue(input, tw));
+        File file = new File(output);
+        FileOutputStream fos = new FileOutputStream(file);
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos));
+
         Dataset<Row> res = getValue(input, tw);
         Dataset<Row> tmp = res;
-        res.toJSON().javaRDD().saveAsTextFile(output);
 
-        Dataset<Row> sim = similarDataset(tmp);
-        sim.toJSON().javaRDD().saveAsTextFile(output1);
+        Dataset<String> res1 = res.toJSON();
+        res1.foreach(row -> writer.write(row));
+        writer.close();
+        fos.close();
+
+        File file1 = new File(output1);
+        FileOutputStream fos1 = new FileOutputStream(file1);
+        BufferedWriter writer1 = new BufferedWriter(new OutputStreamWriter(fos1));
+
+        Dataset<String> sim = similarDataset(tmp).toJSON();
+        sim.foreach(row -> writer.write(row));
+        writer1.close();
+        fos1.close();
 /*        boolean append = true;
         boolean autoFlush = true;
         String charset = "UTF-8";

@@ -10,6 +10,7 @@ import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.ml.linalg.Vector;
 
 import org.apache.spark.sql.*;
+import org.apache.spark.sql.api.java.UDF1;
 import org.apache.spark.sql.api.java.UDF2;
 import org.apache.spark.sql.types.DataTypes;
 import scala.collection.Seq;
@@ -19,14 +20,14 @@ import static org.apache.spark.sql.functions.*;
 
 public class multi {
     public static class KeyWords implements Serializable {
-        private String[] key;
+        private Object[] key;
         private double[] value;
 
-        public String[] getKey() {
+        public Object[] getKey() {
             return key;
         }
 
-        public void setKey(String[] key) {
+        public void setKey(Object[] key) {
             this.key = key;
         }
 
@@ -61,15 +62,16 @@ public class multi {
     public static Dataset<Row> slice(String path, String in){
         SparkSession spark = single.initSpark();
         Dataset<Row> df = single.getValue(path, in);
+
+
+
         JavaRDD<KeyWords> key1 = df
                 .select("filtered", "features").filter("label = 'Twitter'")
                 .javaRDD()
                 .map(r -> {
                         List<Object> fuckU = r.getList(0);
-                        String[] label = new String[fuckU.size()];
-                        for (int i = 0; i < fuckU.size(); i++) {
-                            label[i] = fuckU.get(i).toString();
-                        }
+                        Object[] label = fuckU.toArray();
+
                         Vector tmp = r.getAs(1);
                         double[] value = tmp.toSparse().values();
 
@@ -83,12 +85,12 @@ public class multi {
                 KeyWords.class
         ).withColumn("id", functions.monotonically_increasing_id());
 
-        UDF2 concatItems = new UDF2<Seq<String>, Seq<Double>, Seq<String>>() {
-            public Seq<String> call(final Seq<String> col1, final Seq<Double> col2) throws Exception {
+        UDF2 concatItems = new UDF2<Seq<Object>, Seq<Double>, Seq<String>>() {
+            public Seq<String> call(final Seq<Object> col1, final Seq<Double> col2) throws Exception {
                 ArrayList zipped = new ArrayList();
 
                 for (int i = 0, listSize = col1.size(); i < listSize; i++) {
-                    String subRow = col1.apply(i) + ";" + col2.apply(i).toString();
+                    String subRow = col1.apply(i).toString() + ";" + col2.apply(i).toString();
                     zipped.add(subRow);
                 }
 
@@ -100,7 +102,7 @@ public class multi {
                 .select(col("id"),
                         callUDF("concatItems", col("key"), col("value")).alias("key_value"))
                 .map(s -> {
-                    String info = s.getAs(1);
+                    String info = s.getList(1).get(0).toString();
                     String key = info.split(";")[0];
                     double value = Double.parseDouble(info.split(";")[1]);
 

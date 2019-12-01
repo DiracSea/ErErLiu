@@ -39,18 +39,24 @@ public class score {
         attr.show();
         return attr;
     }
-    public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
+    public static void main(String[] args) throws IOException {
         String input = args[0], output = args[1];
         single s = new single();
         score s1 = new score();
         String[] dir = s.findDir(input);
 
-        Dataset<Row> res = s1.getValue(input, dir[0]);
+        File file = new File(output);
+        FileOutputStream fos = new FileOutputStream(file);
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos));
+        String res;
         for (String d: dir) {
             if (d.equals("movie")) break;
-            res = res.union(s1.getValue(input, d));
+            res = s1.getValue(input, d).toJSON().toString();
+            writer.write(res);
         }
-        res.toJSON().javaRDD().saveAsTextFile(output);
+        writer.close();
+        fos.close();
+
     }
 
 }
