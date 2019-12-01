@@ -49,6 +49,7 @@ public class score {
         for (String d: dir) {
             res = res.union(s.getValue(input, d));
         }
+        res.coalesce(1);
         res.toJSON().javaRDD().saveAsTextFile(output);
     }
 

@@ -286,6 +286,7 @@ public class single {
         String[] dir = s.findDir(input);
         // similarDataset(s.getValue(input, tw));
         Dataset<Row> res = s.getValue(input, tw);
+        res.coalesce(1);
         res.toJSON().javaRDD().saveAsTextFile(output);
 
 /*        boolean append = true;
