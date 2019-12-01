@@ -26,7 +26,7 @@ public class single {
                 .json(path+"/"+src+"/COMMENTS_"+src+".json")
                 .select("body");
         Dataset<Row> new_df = df
-                .withColumn("body", functions.regexp_replace(df.col("body"),"[^a-zA-Z.']+"," "));
+                .withColumn("body", functions.regexp_replace(df.col("body"),"[^a-zA-Z.'?!]+"," "));
         Dataset<Row> new_df1 = new_df
                 .withColumn("body", functions.trim(new_df.col("body")));
 
@@ -68,10 +68,10 @@ public class single {
 
     public static class TW implements Serializable {
         private String label;
-        private String value;
+        private String body;
 
-        public String getValue() {
-            return value;
+        public String getBody() {
+            return body;
         }
 
         public String getLabel() {
@@ -82,8 +82,8 @@ public class single {
             this.label = label;
         }
 
-        public void setValue(String value) {
-            this.value = value;
+        public void setBody(String body) {
+            this.body = body;
         }
     }
 
@@ -96,7 +96,7 @@ public class single {
                     String[] parts = line.split(";");
                     TW tw = new TW();
                     tw.setLabel(parts[0].trim());
-                    tw.setValue(parts[1]
+                    tw.setBody(parts[1]
                             .replaceAll("\\['", "")
                             .replaceAll("', '", " ")
                             .replaceAll("']",""));
@@ -111,7 +111,7 @@ public class single {
         twDF.show(5);
 
         Tokenizer tokenizer = new Tokenizer()
-                .setInputCol("value")
+                .setInputCol("body")
                 .setOutputCol("token");
         Dataset<Row> wordsData = tokenizer.transform(twDF);
 
@@ -119,12 +119,12 @@ public class single {
                 .setInputCol("token")
                 .setOutputCol("filtered");
         Dataset<Row> wordFiltered = remover
-                .transform(wordsData); 
+                .transform(wordsData);
                 // .filter("filtered != null");
         wordFiltered.show(5);
         return wordFiltered;
     }
-    public Dataset<Row> getValue(String path, String src, String tw) {
+    public Dataset<Row> getValue(String path, String tw) {
 
         SparkSession spark = SparkSession
                 .builder()
@@ -133,20 +133,21 @@ public class single {
                 .getOrCreate();
 
         // final HashingTF hTF = new HashingTF();
-
 		/*
 		 	mllib
 			spark
 		 */
         single s = new single();
-        Dataset<Row> reddit = s.initReddit(path, src);
         Dataset<Row> twitter = s.initTwitter(tw);
+        Dataset<Row> reddit;
+
         String[] dir = s.findDir(path);
         for (String d : dir) {
-
+            if (d.equals("movie")) continue;
+            reddit = s.initReddit(path, d);
+            twitter.union(reddit);
         }
-
-
+        Dataset<Row> df = twitter;
 
 /*        CountVectorizerModel cv = new CountVectorizer()
                 .setInputCol("filtered")
@@ -161,7 +162,7 @@ public class single {
                 .setInputCol("filtered")
                 .setOutputCol("rawFeatures");
 
-        Dataset<Row> featurizedData = hashingTF.transform(null);
+        Dataset<Row> featurizedData = hashingTF.transform(df);
         featurizedData.show(5);
 
         // IDF is an Estimator which is fit on a dataset and produces an IDFModel
@@ -177,7 +178,7 @@ public class single {
         // Get Top N data and filter deleted row
 
         // SparseVector s = new SparseVector();
-        return rescaledData.select("filtered", "features");
+        return rescaledData.select("label", "filtered", "features");
     }
 
     public String[] findDir(String path) {
@@ -196,8 +197,7 @@ public class single {
         String input = args[0], output = args[1], tw = args[2];
         single s = new single();
         String[] dir = s.findDir(input);
-        s.initTwitter(tw);
-        s.initReddit(input, "2da3m3");
+        s.getValue(input, tw); 
 
         boolean append = true;
         boolean autoFlush = true;
