@@ -51,7 +51,7 @@ public class single {
         Dataset<Row> wordFiltered = remover
                 .transform(wordsData)
                 .filter("filtered != null")
-                .filter("filtered != ['deleted']")
+                .filter("filtered != "+del)
                 .withColumn("label", functions.lit(src));
         wordFiltered.show(5);
         return wordFiltered;
