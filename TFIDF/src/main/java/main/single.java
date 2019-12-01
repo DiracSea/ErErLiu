@@ -108,6 +108,7 @@ public class single {
                 // .config("")
                 .getOrCreate();
         Dataset<Row> twDF = spark.createDataFrame(table, TW.class);
+        twDF.show(5);
 
         Tokenizer tokenizer = new Tokenizer()
                 .setInputCol("value")
