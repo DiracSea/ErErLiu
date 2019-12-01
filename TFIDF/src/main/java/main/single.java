@@ -64,7 +64,7 @@ public class single {
                 // .filter("filtered != null")
                 .withColumn("label", functions.lit(src));
         wordFiltered.show(5);
-        return wordFiltered;
+        return wordFiltered.select("label", "body");
     }
 
 /*    public Tuple2<String, String[]> tw(String line) {
@@ -133,7 +133,7 @@ public class single {
                 .transform(wordsData);
                 // .filter("filtered != null");
         wordFiltered.show(5);
-        return wordFiltered;
+        return wordFiltered.select("label", "body");
     }
     public Dataset<Row> getValue(String path, String tw) {
 
