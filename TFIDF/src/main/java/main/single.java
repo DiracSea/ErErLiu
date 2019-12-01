@@ -40,7 +40,7 @@ public class single {
 
         Dataset<Row> df = spark.read()
                 .json(path+"/"+src+"/COMMENTS_"+src+".json")
-                .select("body");
+                .select("body").limit(5);
         Dataset<Row> new_df = df
                 .withColumn("body", functions.regexp_replace(df.col("body"),"[^a-zA-Z.'?!]+"," "));
         Dataset<Row> new_df1 = new_df
@@ -121,7 +121,7 @@ public class single {
                     return tw;
                 });
 
-        Dataset<Row> twDF = spark.createDataFrame(table, TW.class);
+        Dataset<Row> twDF = spark.createDataFrame(table, TW.class).limit(5);
         twDF.show(5);
 
         Tokenizer tokenizer = new Tokenizer()
