@@ -237,8 +237,8 @@ public class single {
     public static Dataset<Row> similarDataset (Dataset<Row> res) {
         SparkSession spark = initSpark();
         spark.conf().set("spark.sql.crossJoin.enabled", "true");
-        Dataset<Row> reddit = res.filter("label = 'Reddit'").select("label", "features");
-        Dataset<Row> twitter = res.filter("label = 'Twitter'").select("label", "features");
+        Dataset<Row> reddit = res.filter("label = 'Reddit'").select("filtered", "features");
+        Dataset<Row> twitter = res.filter("label = 'Twitter'").select("filtered", "features");
 
 //        UDF1 dot = new UDF1<Row[], double[]>() {
 //            @Override
@@ -253,19 +253,16 @@ public class single {
 
         JavaRDD<SimilarText> similarTextDataset = jj.toJavaRDD()
                 .map(r -> {
-                        String label1 = r.getList(0).get(0).toString();
-                        System.out.println(label1);
-                        String label2 = r.getList(2).get(0).toString();
-                        System.out.println(label2);
+                        String label1 = r.getList(0).toString();
+                        String label2 = r.getList(2).toString();
+
                         Vector fTwitter = r.getAs(1);
-                        System.out.println(fTwitter.toString());
                         Vector fR = r.getAs(3);
-                        System.out.println(fR.toString());
+
                         double ddot = BLAS.dot(fTwitter.toSparse(), fR.toSparse());
                         double v1 = Vectors.norm(fTwitter.toSparse(), 2.0);
                         double v2 = Vectors.norm(fR.toSparse(), 2.0);
                         double sim = ddot / (v1 * v2);
-                        System.out.println(sim);
 
                         SimilarText similarText = new SimilarText();
                         similarText.setLabel1(label1);
@@ -278,7 +275,7 @@ public class single {
                 similarTextDataset,
                 SimilarText.class
         );
-        sim.show(10);
+        sim.show(100);
         // sim.select("label1", "label2", "similarity").createOrReplaceTempView("tmp");
 /*        .withColumn("rank",
                 functions.rank().over(Window.partitionBy("label1").orderBy("similarity")))*/
@@ -322,10 +319,10 @@ public class single {
         Dataset<Row> init = getValue(input, tw);
         Dataset<Row> tmp = init;
 
-        JavaRDD<String> res = init.toJSON().toJavaRDD();
+/*        JavaRDD<String> res = init.toJSON().toJavaRDD();
 
         // System.out.println(res.toString());
-        res.saveAsTextFile(output);
+        res.saveAsTextFile(output);*/
 
         JavaRDD<String> res1 = similarDataset(tmp).toJSON().toJavaRDD();
 

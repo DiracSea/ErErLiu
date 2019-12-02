@@ -59,14 +59,13 @@ public class multi {
             this.value = value;
         }
     }
-    public static Dataset<Row> slice(String path, String in){
+    public static Dataset<Row> slice(String path, String in, String community){
         SparkSession spark = single.initSpark();
         Dataset<Row> df = single.getValue(path, in);
 
-
-
         JavaRDD<KeyWords> key1 = df
-                .select("filtered", "features").filter("label = 'Twitter'")
+                .filter("label = " + community)
+                .select("filtered", "features")
                 .javaRDD()
                 .map(r -> {
                         List<Object> fuckU = r.getList(0);
@@ -83,7 +82,7 @@ public class multi {
         Dataset<Row> key2 = spark.createDataFrame(
                 key1,
                 KeyWords.class
-        ).withColumn("id", functions.monotonically_increasing_id());
+        ).withColumn("id", monotonically_increasing_id());
 
         UDF2 concatItems = new UDF2<Seq<Object>, Seq<Double>, Seq<String>>() {
             public Seq<String> call(final Seq<Object> col1, final Seq<Double> col2) throws Exception {
@@ -102,7 +101,7 @@ public class multi {
                 .select(col("id"),
                         callUDF("concatItems", col("key"), col("value")).alias("key_value"))
                 .map(s -> {
-                    String info = s.getList(1).get(0).toString();
+                    String info = s.getList(1).toString();
                     String key = info.split(";")[0];
                     double value = Double.parseDouble(info.split(";")[1]);
 
@@ -125,9 +124,9 @@ public class multi {
 
     public static void main(String[] args) throws IOException {
         String input = args[0], output = args[1], tw = args[2], output1 = args[3];
-        JavaRDD<String> df = slice(input, tw).toJSON().toJavaRDD();
+        JavaRDD<String> df = slice(input, tw, "Twitter").toJSON().toJavaRDD();
 
-        df.saveAsTextFile(output);
+        df.saveAsTextFile(output+"T");
     }
 
 }
