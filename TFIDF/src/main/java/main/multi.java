@@ -144,8 +144,8 @@ public class multi {
                 KeyWords.class
         ); // .withColumn("id", monotonically_increasing_id());
 
-        UDF2 concatItems = new UDF2<Seq<Object>, Seq<Double>, Seq<String>>() {
-            public Seq<String> call(final Seq<Object> col1, final Seq<Double> col2) throws Exception {
+        UDF2 concatItems = new UDF2<Seq<Object[]>, Seq<Double[]>, Seq<String>>() {
+            public Seq<String> call(final Seq<Object[]> col1, final Seq<Double[]> col2) throws Exception {
                 ArrayList zipped = new ArrayList();
 
                 for (int i = 0, listSize = col1.size(); i < listSize; i++) {
@@ -179,7 +179,7 @@ public class multi {
 
         Dataset<Row> rank = keyword
                 .groupBy(col("key")).agg(avg("value").alias("v"));
-        return rank.select("key","v").orderBy(col("v").desc());
+        return rank.select("key","v");
     }
 
     public static void main(String[] args) throws IOException {
