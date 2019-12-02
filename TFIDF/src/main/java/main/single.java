@@ -193,19 +193,19 @@ public class single {
         // Get Top N data and filter deleted row
 
         // SparseVector s = new SparseVector();
-        return rescaledData.select("label", "filtered", "features");
+        return rescaledData.select("label", "features");
     }
 
-    public static class SimilarText implements Serializable, Comparable<SimilarText> {
-        private String label1;
-        private String label2;
+    public static class SimilarText implements Serializable {
+        private long label1;
+        private long label2;
         private double similarity;
 
-        public String getLabel1() {
+        public long getLabel1() {
             return label1;
         }
 
-        public String getLabel2() {
+        public long getLabel2() {
             return label2;
         }
 
@@ -213,36 +213,23 @@ public class single {
             return similarity;
         }
 
-        public void setLabel1(String label1) {
+        public void setLabel1(long label1) {
             this.label1 = label1;
         }
 
-        public void setLabel2(String label2) {
+        public void setLabel2(long label2) {
             this.label2 = label2;
         }
 
         public void setSimilarity(double similarity) {
             this.similarity = similarity;
         }
-
-        @Override
-        public int compareTo(SimilarText similarText) {
-            SimilarText s = similarText;
-
-            if (this.similarity > s.similarity)
-                return 1;
-            else if (this.similarity < s.similarity)
-                return -1;
-            else {
-                return 0;
-            }
-        }
     }
     public static Dataset<Row> similarDataset (Dataset<Row> res) {
         SparkSession spark = initSpark();
         spark.conf().set("spark.sql.crossJoin.enabled", "true");
-        Dataset<Row> reddit = res.filter("label = 'Reddit'").select("filtered", "features");
-        Dataset<Row> twitter = res.filter("label = 'Twitter'").select("filtered", "features");
+        Dataset<Row> reddit = res.filter("label = 'Reddit'").withColumn("id", monotonically_increasing_id());
+        Dataset<Row> twitter = res.filter("label = 'Twitter'").withColumn("id", monotonically_increasing_id());
 
 //        UDF1 dot = new UDF1<Row[], double[]>() {
 //            @Override
@@ -252,13 +239,13 @@ public class single {
 //                return new double[0];
 //            }
 //        };
-        Dataset<Row> jj = twitter.join(reddit);
+        Dataset<Row> jj = twitter.select("id", "features").join(reddit.select("id", "features"));
         jj.show(10);
 
         JavaRDD<SimilarText> similarTextDataset = jj.toJavaRDD()
                 .map(r -> {
-                        String label1 = r.getList(0).toString();
-                        String label2 = r.getList(2).toString();
+                        long label1 = r.getLong(0);
+                        long label2 = r.getLong(2);
 
                         Vector fTwitter = r.getAs(1);
                         Vector fR = r.getAs(3);
