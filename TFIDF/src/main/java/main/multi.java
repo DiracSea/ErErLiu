@@ -68,15 +68,13 @@ public class multi {
                 .limit(1).withColumn("label", when(col("label").equalTo("Reddit"), "X"));
         Dataset<Row> reddit1;
 
-        int i = 0;
         for (String d : dir) {
-            i += 1;
-            if (d.equals("movie") || i > 10) break;
-            reddit1 = s.initReddit(path, d).limit(1);
+            if (d.equals("movie")) break;
+            reddit1 = s.initReddit(path, d);
 
             tmp = tmp.union(reddit1);
         }
-        Dataset<Row> twitter = s.initTwitter(tw).limit(100);
+        Dataset<Row> twitter = s.initTwitter(tw);
         Dataset<Row> df = twitter.union(tmp);
 
 
@@ -160,7 +158,7 @@ public class multi {
         String input = args[0], output = args[1], tw = args[2], output1 = args[3];
         JavaRDD<String> df = slice(input, tw).toJSON().toJavaRDD();
 
-        df.coalesce(1).saveAsTextFile(output);
+        df.saveAsTextFile(output);
     }
 
 }
