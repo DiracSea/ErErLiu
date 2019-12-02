@@ -1,9 +1,6 @@
 package main;
 
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.functions;
+import org.apache.spark.sql.*;
 
 import java.io.*;
 
@@ -19,7 +16,7 @@ public class score {
         }
         return spark;
     }
-    public static String getValue(String path, String src) {
+    public static Dataset<Row> getValue(String path, String src) {
         String col = "score";
         SparkSession spark = initSpark();
         Dataset<Row> df = spark.read().json(path+"/"+src+"/COMMENTS_"+src+".json").select(col);
@@ -30,7 +27,7 @@ public class score {
                         functions.max(col).alias("max"), functions.stddev(col).alias("stddev"));
         des.show();
         // Dataset<Row> df1 = spark.read().json(path+"/"+src+"/SUBMISSION_"+src+".json").select(col, "upvote_ratio");
-        return des.select( "mean", "stddev", "min", "max").toString();
+        return des.select( "mean", "stddev", "min", "max");
     }
     public static void main(String[] args) throws IOException {
         String input = args[0], output = args[1];
@@ -38,7 +35,12 @@ public class score {
 
         String[] dir = s.findDir(input);
 
-        File file = new File(output);
+        for (String d : dir) {
+            Dataset<Row> df = getValue(input, d);
+            df.write().mode(SaveMode.Append).json(output);
+        }
+
+/*        File file = new File(output);
         if (!file.exists()) {
             file.getParentFile().mkdir();
             try {
@@ -59,7 +61,7 @@ public class score {
         }
         pw.close();
         writer.close();
-        fos.close();
+        fos.close();*/
 
     }
 
