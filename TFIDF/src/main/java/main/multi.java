@@ -82,9 +82,9 @@ public class multi {
 
             tmp = tmp.union(reddit1);
         }
-        tmp = tmp.filter("label != X");
+        Dataset<Row> tmp1 = tmp.filter("label != X");
         Dataset<Row> twitter = s.initTwitter(tw);
-        Dataset<Row> df = twitter.union(tmp);
+        Dataset<Row> df = twitter.union(tmp1);
 
 
         HashingTF hashingTF = new HashingTF()
