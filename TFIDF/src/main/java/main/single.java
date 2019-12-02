@@ -42,14 +42,13 @@ public class single {
                 .json(path+"/"+src+"/COMMENTS_"+src+".json")
                 .filter("score > 10")
                 .select("body", "score")
-                .orderBy(col("score").desc()).limit(25);
+                .orderBy(col("score").desc()).limit(8);
         Dataset<Row> new_df = df
                 .withColumn("body", functions.regexp_replace(df.col("body"),"[^a-zA-Z.'?!]+"," "));
         Dataset<Row> new_df1 = new_df
                 .withColumn("body", functions.trim(new_df.col("body")));
 
         Dataset<Row> new_df2 = new_df1
-                .withColumn("body", functions.regexp_replace(new_df1.col("body"), "\\s+", " "))
                 .filter("body != '\\s+deleted'")
                 .filter("body != 'deleted'")
                 .filter("body != ''");
@@ -122,7 +121,7 @@ public class single {
                     return tw;
                 });
 
-        Dataset<Row> twDF = spark.createDataFrame(table, TW.class);
+        Dataset<Row> twDF = spark.createDataFrame(table, TW.class).limit(8000);
         // twDF.show(5);
 
         Tokenizer tokenizer = new Tokenizer()
@@ -198,15 +197,15 @@ public class single {
     }
 
     public static class SimilarText implements Serializable {
-        private long label1;
-        private long label2;
+        private int label1;
+        private int label2;
         private double similarity;
 
-        public long getLabel1() {
+        public int getLabel1() {
             return label1;
         }
 
-        public long getLabel2() {
+        public int getLabel2() {
             return label2;
         }
 
@@ -214,11 +213,11 @@ public class single {
             return similarity;
         }
 
-        public void setLabel1(long label1) {
+        public void setLabel1(int label1) {
             this.label1 = label1;
         }
 
-        public void setLabel2(long label2) {
+        public void setLabel2(int label2) {
             this.label2 = label2;
         }
 
@@ -245,8 +244,8 @@ public class single {
 
         JavaRDD<SimilarText> similarTextDataset = jj.toJavaRDD()
                 .map(r -> {
-                        long label1 = r.getLong(0);
-                        long label2 = r.getLong(2);
+                        int label1 = r.getInt(0);
+                        int label2 = r.getInt(2);
 
                         Vector fTwitter = r.getAs(1);
                         Vector fR = r.getAs(3);
