@@ -162,9 +162,8 @@ public class single {
 
             tmp = tmp.union(reddit1);
         }
-        Dataset<Row> tmp1 = tmp.filter("label != X");
         Dataset<Row> twitter = s.initTwitter(tw);
-        Dataset<Row> df = twitter.union(tmp1);
+        Dataset<Row> df = twitter.union(tmp);
 
 /*        CountVectorizerModel cv = new CountVectorizer()
                 .setInputCol("filtered")
