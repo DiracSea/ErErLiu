@@ -42,13 +42,12 @@ public class score {
         String[] dir = s.findDir(input);
 
 
-        Dataset<Row> res = s1.getValue(input, dir[0]);
+        Dataset<Row> res;
         for (String d: dir) {
             if (d.equals("movie")) break;
-            res = res.union(s1.getValue(input, d));
+            res = s1.getValue(input, d);
+            res.write().mode(SaveMode.Append).format("org.apache.spark.sql.json").save(output);
         }
-        res.write().mode(SaveMode.Append).json(output);
-
 
     }
 

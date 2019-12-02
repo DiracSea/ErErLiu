@@ -314,17 +314,22 @@ public class single {
 
         // similarDataset(getValue(input, tw));
         File file = new File(output);
-        FileOutputStream fos = new FileOutputStream(file);
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos));
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+        file = new File(output1);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
 
         Dataset<Row> res = getValue(input, tw);
         Dataset<Row> tmp = res;
 
-        res.write().mode(SaveMode.Append).json(output);
+        res.write().mode(SaveMode.Append).format("org.apache.spark.sql.json").save(output);
 
         Dataset<Row> sim = similarDataset(tmp);
 
-        sim.write().mode(SaveMode.Append).json(output1);
+        sim.write().mode(SaveMode.Append).format("org.apache.spark.sql.json").save(output1);
 
 /*        boolean append = true;
         boolean autoFlush = true;
