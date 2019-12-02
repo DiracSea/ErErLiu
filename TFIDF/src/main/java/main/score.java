@@ -1,5 +1,6 @@
 package main;
 
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.*;
 
 import java.io.*;
@@ -34,11 +35,10 @@ public class score {
         single s = new single();
 
         String[] dir = s.findDir(input);
-        Dataset<Row> df;
-
+        JavaRDD<String> df;
         for (String d : dir) {
-            df = getValue(input, d);
-            df.write().mode(SaveMode.Append).json(output);
+            df = getValue(input, d).toJSON().toJavaRDD();
+            df.saveAsTextFile(output +"/"+ d);
         }
 
 /*        File file = new File(output);

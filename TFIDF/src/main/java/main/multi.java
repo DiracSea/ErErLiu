@@ -125,18 +125,9 @@ public class multi {
 
     public static void main(String[] args) throws IOException {
         String input = args[0], output = args[1], tw = args[2], output1 = args[3];
-        Dataset<Row> df = slice(input, tw);
-        File file = new File(output);
-        if (!file.exists()) {
-            file.getParentFile().mkdir();
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        df.write().mode(SaveMode.Append).format("org.apache.spark.sql.json").save(output);
+        JavaRDD<String> df = slice(input, tw).toJSON().toJavaRDD();
 
+        df.saveAsTextFile(output);
     }
 
 }
