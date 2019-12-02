@@ -7,6 +7,9 @@ import java.util.List;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.MapFunction;
+import org.apache.spark.ml.feature.HashingTF;
+import org.apache.spark.ml.feature.IDF;
+import org.apache.spark.ml.feature.IDFModel;
 import org.apache.spark.ml.linalg.Vector;
 
 import org.apache.spark.sql.*;
@@ -15,6 +18,7 @@ import org.apache.spark.sql.api.java.UDF2;
 import org.apache.spark.sql.types.DataTypes;
 import scala.collection.Seq;
 
+import static main.single.*;
 import static org.apache.spark.sql.functions.*;
 
 
@@ -59,9 +63,52 @@ public class multi {
             this.value = value;
         }
     }
+    public static Dataset<Row> getValue(String path, String tw) {
+
+        SparkSession spark = initSpark();
+
+        single s = new single();
+        Dataset<Row> twitter = initTwitter(tw);
+        Dataset<Row> reddit;
+
+        String[] dir = s.findDir(path);
+        int i = 0;
+        for (String d : dir) {
+            i += 1;
+            if (d.equals("movie") || i > 10) break;
+            reddit = initReddit(path, d);
+
+            twitter = twitter.union(reddit);
+        }
+        Dataset<Row> df = twitter;
+
+
+        HashingTF hashingTF = new HashingTF()
+                .setInputCol("filtered")
+                .setOutputCol("rawFeatures");
+
+        Dataset<Row> featurizedData = hashingTF.transform(df);
+        featurizedData.show(5);
+
+        // IDF is an Estimator which is fit on a dataset and produces an IDFModel
+        IDF idf = new IDF()
+                .setInputCol("rawFeatures")
+                .setOutputCol("features");
+        IDFModel idfModel = idf.fit(featurizedData);
+
+        // The IDFModel takes feature vectors (generally created from HashingTF or CountVectorizer) and scales each column
+        Dataset<Row> rescaledData = idfModel.transform(featurizedData);
+        rescaledData.show(5);
+
+        // Get Top N data and filter deleted row
+
+        // SparseVector s = new SparseVector();
+        return rescaledData.select("label", "filtered", "features");
+    }
+
     public static Dataset<Row> slice(String path, String in, String community){
-        SparkSession spark = single.initSpark();
-        Dataset<Row> df = single.getValue(path, in);
+        SparkSession spark = initSpark();
+        Dataset<Row> df = getValue(path, in);
 
         JavaRDD<KeyWords> key1 = df
                 .filter("label = " + community)
@@ -126,7 +173,7 @@ public class multi {
         String input = args[0], output = args[1], tw = args[2], output1 = args[3];
         JavaRDD<String> df = slice(input, tw, "Twitter").toJSON().toJavaRDD();
 
-        df.saveAsTextFile(output+"T");
+        df.coalesce(1).saveAsTextFile(output+"T");
     }
 
 }

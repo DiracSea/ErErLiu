@@ -140,25 +140,23 @@ public class single {
 
         SparkSession spark = initSpark();
 
-        // final HashingTF hTF = new HashingTF();
-		/*
-		 	mllib
-			spark
-		 */
         single s = new single();
-        Dataset<Row> twitter = initTwitter(tw);
-        Dataset<Row> reddit;
+
+        Dataset<Row> reddit = null;
+        Dataset<Row> reddit1;
 
         String[] dir = s.findDir(path);
         int i = 0;
         for (String d : dir) {
             i += 1;
             if (d.equals("movie") || i > 10) break;
-            reddit = initReddit(path, d);
+            reddit1 = initReddit(path, d);
 
-            twitter = twitter.union(reddit);
+            reddit = reddit.union(reddit1);
         }
-        Dataset<Row> df = twitter;
+
+        Dataset<Row> twitter = initTwitter(tw);
+        Dataset<Row> df = twitter.union(reddit);
 
 /*        CountVectorizerModel cv = new CountVectorizer()
                 .setInputCol("filtered")
@@ -275,11 +273,12 @@ public class single {
                 similarTextDataset,
                 SimilarText.class
         );
+        System.out.println("cosine");
         sim.show(100);
         // sim.select("label1", "label2", "similarity").createOrReplaceTempView("tmp");
 /*        .withColumn("rank",
                 functions.rank().over(Window.partitionBy("label1").orderBy("similarity")))*/
-        Dataset<Row> ds1 = sim
+/*        Dataset<Row> ds1 = sim
                 .groupBy(col("label1").alias("label"))
                 .agg(max("similarity").alias("max")
                         , min("similarity").alias("min")
@@ -294,8 +293,8 @@ public class single {
 
         Dataset<Row> ds = ds1.select("label", "max", "min", "avg", "dev")
                 .union(ds2.select("label", "max", "min", "avg", "dev"));
-        ds.show(5);
-        return ds;
+        ds.show(5);*/
+        return sim;
     }
 
     public String[] findDir (String path) {
@@ -324,7 +323,7 @@ public class single {
         // System.out.println(res.toString());
         res.saveAsTextFile(output);*/
 
-        JavaRDD<String> res1 = similarDataset(tmp).toJSON().toJavaRDD();
+        JavaRDD<String> res1 = similarDataset(tmp).coalesce(1).toJSON().toJavaRDD();
 
         res1.saveAsTextFile(output1);
 
