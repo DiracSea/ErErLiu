@@ -328,7 +328,7 @@ public class single {
         String charset = "UTF-8";
         String filePath = output;
         String tmp;*/
-        File file = new File(output);
+/*        File file = new File(output);
         if (!file.exists()) {
             file.getParentFile().mkdir();
             try {
@@ -336,19 +336,18 @@ public class single {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-        FileOutputStream fos = new FileOutputStream(file, true);
+        }*/
+/*        FileOutputStream fos = new FileOutputStream(file, true);
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos, "UTF-8"));
         PrintWriter pw = new PrintWriter(writer, true);
-        String res1;
-
+        String res1;*/
+        System.out.println(res.toString());
         res.saveAsTextFile(output);
-        System.out.println(res);
         // pw.write(res1);
 
-        pw.close();
+/*        pw.close();
         writer.close();
-        fos.close();
+        fos.close();*/
 
 
     }
