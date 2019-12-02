@@ -1,4 +1,4 @@
-package main;
+package Visualization;
 
 import com.kennycason.kumo.*;
 import com.kennycason.kumo.bg.CircleBackground;

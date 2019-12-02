@@ -40,24 +40,22 @@ public class single {
 
         Dataset<Row> df = spark.read()
                 .json(path+"/"+src+"/COMMENTS_"+src+".json")
-                .filter("score > 10")
+                // .filter("score > 10")
                 .select("body", "score")
-                .orderBy(col("score").desc()).limit(8);
+                .orderBy(col("score").desc()).limit(5);
         Dataset<Row> new_df = df
                 .withColumn("body", functions.regexp_replace(df.col("body"),"[^a-zA-Z.'?!]+"," "));
         Dataset<Row> new_df1 = new_df
-                .withColumn("body", functions.trim(new_df.col("body")));
-
-        Dataset<Row> new_df2 = new_df1
+                .withColumn("body", functions.trim(new_df.col("body")))
                 .filter("body != '\\s+deleted'")
-                .filter("body != 'deleted'")
                 .filter("body != ''");
+
         // new_df2.show(5);
 
         Tokenizer tokenizer = new Tokenizer()
                 .setInputCol("body")
                 .setOutputCol("token");
-        Dataset<Row> wordsData = tokenizer.transform(new_df2);
+        Dataset<Row> wordsData = tokenizer.transform(new_df1);
 
         StopWordsRemover remover = new StopWordsRemover()
                 .setInputCol("token")
@@ -121,7 +119,7 @@ public class single {
                     return tw;
                 });
 
-        Dataset<Row> twDF = spark.createDataFrame(table, TW.class).limit(8000);
+        Dataset<Row> twDF = spark.createDataFrame(table, TW.class).limit(2000);
         // twDF.show(5);
 
         Tokenizer tokenizer = new Tokenizer()
