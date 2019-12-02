@@ -150,8 +150,8 @@ public class single {
         single s = new single();
         String[] dir = s.findDir(path);
 
-        Dataset<Row> tmp = s.initReddit(path, dir[0]);
-        tmp.limit(1).withColumn("label", when(col("label").equalTo("Reddit"), "X"));
+        Dataset<Row> tmp = s.initReddit(path, dir[0])
+                .limit(1).withColumn("label", when(col("label").equalTo("Reddit"), "X"));
         Dataset<Row> reddit1;
 
         int i = 0;
