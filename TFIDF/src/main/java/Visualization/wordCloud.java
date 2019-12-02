@@ -36,7 +36,7 @@ public class wordCloud {
         Dataset<Row> df1;
         int i = 0;
         for (String d : dir) {
-            if (d.equals("movie") || d.equals("T")) break;
+            if (d.equals("movie") || d.equals("T")) continue;
             df1 = spark.read()
                     .json(input+"/"+d+"/part-00000")
                     .groupBy(functions.col("word")).count();
