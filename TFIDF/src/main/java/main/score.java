@@ -1,6 +1,9 @@
 package main;
 
-import org.apache.spark.sql.*;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.functions;
 
 import java.io.*;
 
@@ -16,7 +19,7 @@ public class score {
         }
         return spark;
     }
-    public Dataset<Row> getValue(String path, String src) {
+    public String getValue(String path, String src) {
         String col = "score";
         SparkSession spark = initSpark();
         Dataset<Row> df = spark.read().json(path+"/"+src+"/COMMENTS_"+src+".json").select(col);
@@ -26,14 +29,9 @@ public class score {
                 .select(functions.mean(col).alias("mean"), functions.min(col).alias("min"),
                         functions.max(col).alias("max"), functions.stddev(col).alias("stddev"));
         des.show();
-        Dataset<Row> df1 = spark.read().json(path+"/"+src+"/SUBMISSION_"+src+".json").select(col, "upvote_ratio");
-
-        Dataset<Row> attr = des
-                .withColumn("label", functions.lit(src))
-                .withColumn("glo_score", functions.lit(df1.select(col).head().getLong(0)))
-                .withColumn("upvote_ratio", functions.lit(df1.select("upvote_ratio").head().getDouble(0)));
-        attr.show();
-        return attr.select("label", "mean", "stddev", "min", "max", "glo_score", "upvote_ratio");
+        // Dataset<Row> df1 = spark.read().json(path+"/"+src+"/SUBMISSION_"+src+".json").select(col, "upvote_ratio");
+        return des.select( "mean", "stddev", "min", "max")
+                .toJSON().toString();
     }
     public static void main(String[] args) throws IOException {
         String input = args[0], output = args[1];
@@ -41,13 +39,20 @@ public class score {
         score s1 = new score();
         String[] dir = s.findDir(input);
 
-
-        Dataset<Row> res;
+        File file = new File(output);
+        FileOutputStream fos = new FileOutputStream(file);
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos));
+        PrintWriter pw = new PrintWriter(writer);
+        String res;
         for (String d: dir) {
             if (d.equals("movie")) break;
             res = s1.getValue(input, d);
-            res.write().mode(SaveMode.Append).format("org.apache.spark.sql.json").save(output);
+            System.out.println(res);
+            pw.write(res);
         }
+        pw.close(); 
+        writer.close();
+        fos.close();
 
     }
 
