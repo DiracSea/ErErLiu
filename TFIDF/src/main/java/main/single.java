@@ -313,11 +313,22 @@ public class single {
 
 
         // similarDataset(getValue(input, tw));
+
+        Dataset<Row> res = getValue(input, tw);
+/*        Dataset<Row> tmp = res;
+
+        res.write().mode(SaveMode.Append).format("org.apache.spark.sql.json").save(output);
+
+        Dataset<Row> sim = similarDataset(tmp);
+
+        sim.write().mode(SaveMode.Append).format("org.apache.spark.sql.json").save(output1);*/
+
+/*        boolean append = true;
+        boolean autoFlush = true;
+        String charset = "UTF-8";
+        String filePath = output;
+        String tmp;*/
         File file = new File(output);
-        if (!file.exists()) {
-            file.mkdirs();
-        }
-        file = new File(output1);
         if (!file.exists()) {
             file.getParentFile().mkdir();
             try {
@@ -326,21 +337,17 @@ public class single {
                 e.printStackTrace();
             }
         }
+        FileOutputStream fos = new FileOutputStream(file, true);
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos, "UTF-8"));
+        PrintWriter pw = new PrintWriter(writer, true);
+        String res1;
+        res1 = res.toJSON().toString();
+        System.out.println(res);
+        pw.write(res1);
 
-        Dataset<Row> res = getValue(input, tw);
-        Dataset<Row> tmp = res;
-
-        res.write().mode(SaveMode.Append).format("org.apache.spark.sql.json").save(output);
-
-        Dataset<Row> sim = similarDataset(tmp);
-
-        sim.write().mode(SaveMode.Append).format("org.apache.spark.sql.json").save(output1);
-
-/*        boolean append = true;
-        boolean autoFlush = true;
-        String charset = "UTF-8";
-        String filePath = output;
-        String tmp;*/
+        pw.close();
+        writer.close();
+        fos.close();
 
 
     }

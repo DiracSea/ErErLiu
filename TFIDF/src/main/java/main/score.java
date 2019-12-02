@@ -34,9 +34,10 @@ public class score {
         single s = new single();
 
         String[] dir = s.findDir(input);
+        Dataset<Row> df;
 
         for (String d : dir) {
-            Dataset<Row> df = getValue(input, d);
+            df = getValue(input, d);
             df.write().mode(SaveMode.Append).json(output);
         }
 
