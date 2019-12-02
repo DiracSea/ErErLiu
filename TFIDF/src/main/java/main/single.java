@@ -41,7 +41,7 @@ public class single {
         Dataset<Row> df = spark.read()
                 .json(path+"/"+src+"/COMMENTS_"+src+".json")
                 .filter("score > 10")
-                .select("body").limit(1);
+                .select("body");
         Dataset<Row> new_df = df
                 .withColumn("body", functions.regexp_replace(df.col("body"),"[^a-zA-Z.'?!]+"," "));
         Dataset<Row> new_df1 = new_df
@@ -121,7 +121,7 @@ public class single {
                     return tw;
                 });
 
-        Dataset<Row> twDF = spark.createDataFrame(table, TW.class).limit(5);
+        Dataset<Row> twDF = spark.createDataFrame(table, TW.class);
         twDF.show(5);
 
         Tokenizer tokenizer = new Tokenizer()
@@ -154,10 +154,9 @@ public class single {
                 .limit(1).withColumn("label", when(col("label").equalTo("Reddit"), "X"));
         Dataset<Row> reddit1;
 
-        int i = 0;
+
         for (String d : dir) {
-            i += 1;
-            if (d.equals("movie") || i > 10) break;
+            if (d.equals("movie")) break;
             reddit1 = s.initReddit(path, d);
 
             tmp = tmp.union(reddit1);
@@ -280,8 +279,9 @@ public class single {
                 similarTextDataset,
                 SimilarText.class
         );
+        Dataset<Row> remain = sim.filter("value > 0");
         System.out.println("cosine");
-        sim.show(100);
+        remain.show(10);
         // sim.select("label1", "label2", "similarity").createOrReplaceTempView("tmp");
 /*        .withColumn("rank",
                 functions.rank().over(Window.partitionBy("label1").orderBy("similarity")))*/
@@ -301,7 +301,7 @@ public class single {
         Dataset<Row> ds = ds1.select("label", "max", "min", "avg", "dev")
                 .union(ds2.select("label", "max", "min", "avg", "dev"));
         ds.show(5);*/
-        return sim;
+        return remain;
     }
 
     public String[] findDir (String path) {
@@ -321,14 +321,13 @@ public class single {
         single s = new single();
         // similarDataset(getValue(input, tw));
 
-        Dataset<Row> init = s.getValue(input, tw);
 
 /*        JavaRDD<String> res = init.toJSON().toJavaRDD();
 
         // System.out.println(res.toString());
         res.saveAsTextFile(output);*/
 
-        JavaRDD<String> res1 = similarDataset(s.getValue(input, tw)).coalesce(1).toJSON().toJavaRDD();
+        JavaRDD<String> res1 = similarDataset(s.getValue(input, tw)).toJSON().toJavaRDD();
 
         res1.saveAsTextFile(output1);
 
