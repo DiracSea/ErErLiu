@@ -43,7 +43,6 @@ public class wordCloud {
             df1.toJSON().toJavaRDD().repartition(1).saveAsTextFile(output+"/"+d);
         }
     }
-
     public void bi() throws IOException {
         final FrequencyAnalyzer frequencyAnalyzer = new FrequencyAnalyzer();
         frequencyAnalyzer.setWordFrequenciesToReturn(750);
