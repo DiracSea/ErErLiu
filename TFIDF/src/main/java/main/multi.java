@@ -2,9 +2,12 @@ package main;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.ml.feature.HashingTF;
@@ -15,6 +18,7 @@ import org.apache.spark.ml.linalg.Vector;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.api.java.UDF1;
 import org.apache.spark.sql.api.java.UDF2;
+import org.apache.spark.sql.expressions.Window;
 import org.apache.spark.sql.types.DataTypes;
 import scala.collection.Seq;
 
@@ -25,12 +29,8 @@ import static org.apache.spark.sql.functions.*;
 public class multi {
     public static class KeyWords implements Serializable {
         private String label;
-        private Object[] key;
-        private double[] value;
-
-        public Object[] getKey() {
-            return key;
-        }
+        private String key;
+        private double value;
 
         public String getLabel() {
             return label;
@@ -39,22 +39,6 @@ public class multi {
         public void setLabel(String label) {
             this.label = label;
         }
-
-        public void setKey(Object[] key) {
-            this.key = key;
-        }
-
-        public double[] getValue() {
-            return value;
-        }
-
-        public void setValue(double[] value) {
-            this.value = value;
-        }
-    }
-    public static class KeyWord implements Serializable {
-        private String key;
-        private double value;
 
         public String getKey() {
             return key;
@@ -72,6 +56,7 @@ public class multi {
             this.value = value;
         }
     }
+
     public static Dataset<Row> getValue(String path, String tw) {
 
         SparkSession spark = initSpark();
@@ -87,11 +72,11 @@ public class multi {
         for (String d : dir) {
             i += 1;
             if (d.equals("movie") || i > 10) break;
-            reddit1 = s.initReddit(path, d);
+            reddit1 = s.initReddit(path, d).limit(1);
 
             tmp = tmp.union(reddit1);
         }
-        Dataset<Row> twitter = s.initTwitter(tw);
+        Dataset<Row> twitter = s.initTwitter(tw).limit(100);
         Dataset<Row> df = twitter.union(tmp);
 
 
@@ -118,7 +103,7 @@ public class multi {
         return rescaledData.select("label", "filtered", "features");
     }
 
-    public static Dataset<Row> slice(String path, String in, String community){
+    public static Dataset<Row> slice(String path, String in){
         SparkSession spark = initSpark();
         Dataset<Row> df = getValue(path, in);
 
@@ -132,19 +117,24 @@ public class multi {
 
                         Vector tmp = r.getAs(2);
                         double[] value = tmp.toSparse().values();
+                        List a = Arrays.asList(ArrayUtils.toObject(value));
+                        double max = (double) Collections.max(a);
+
+                        int idx = a.indexOf(max);
+                        String key = ff[idx].toString();
 
                         KeyWords keyWords = new KeyWords();
                         keyWords.setLabel(label);
-                        keyWords.setKey(ff);
-                        keyWords.setValue(value);
+                        keyWords.setKey(key);
+                        keyWords.setValue(max);
                         return keyWords;
                 });
-        Dataset<Row> key2 = spark.createDataFrame(
+        Dataset<Row> keyword = spark.createDataFrame(
                 key1,
                 KeyWords.class
         ); // .withColumn("id", monotonically_increasing_id());
 
-        UDF2 concatItems = new UDF2<Seq<Object>, Seq<Double>, Seq<String>>() {
+/*        UDF2 concatItems = new UDF2<Seq<Object>, Seq<Double>, Seq<String>>() {
             public Seq<String> call(final Seq<Object> col1, final Seq<Double> col2) throws Exception {
                 ArrayList zipped = new ArrayList();
 
@@ -155,38 +145,22 @@ public class multi {
 
                 return scala.collection.JavaConversions.asScalaBuffer(zipped);
             }
-        };
-        spark.udf().register("concatItems",concatItems, DataTypes.StringType);
-        Dataset<KeyWord> df2 = key2
-                .select(col("label"),
-                        callUDF("concatItems", col("key"), col("value")).alias("key_value"))
-                .map(s -> {
-                    String info = s.getList(1).toString();
-                    String key = info.split(";")[0];
-                    double value = Double.parseDouble(info.split(";")[1]);
+        };*/
 
-                    KeyWord keyWord = new KeyWord();
-                    keyWord.setKey(key);
-                    keyWord.setValue(value);
-
-                    return keyWord;
-                }, Encoders.bean(KeyWord.class));
-
-        Dataset<Row> keyword = spark.createDataFrame(
-                df2.toJavaRDD(),
-                KeyWord.class
-        );
-
-        Dataset<Row> rank = keyword
+        Dataset<Row> mean = keyword
                 .groupBy(col("key")).agg(avg("value").alias("v"));
-        return rank.select("key","v");
+        Dataset<Row> rank = mean
+                .withColumn("rank", rank().over(Window.partitionBy("label").orderBy(col("v").desc())))
+                .filter("rank <= 500")
+                .drop("rank");
+        return rank.select("label", "key", "v");
     }
 
     public static void main(String[] args) throws IOException {
         String input = args[0], output = args[1], tw = args[2], output1 = args[3];
-        JavaRDD<String> df = slice(input, tw, "Twitter").toJSON().toJavaRDD();
+        JavaRDD<String> df = slice(input, tw).toJSON().toJavaRDD();
 
-        df.coalesce(1).saveAsTextFile(output+"T");
+        df.coalesce(1).saveAsTextFile(output);
     }
 
 }
