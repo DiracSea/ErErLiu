@@ -1,9 +1,6 @@
 package main;
 
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.functions;
+import org.apache.spark.sql.*;
 
 import java.io.*;
 
@@ -31,13 +28,12 @@ public class score {
         des.show();
         Dataset<Row> df1 = spark.read().json(path+"/"+src+"/SUBMISSION_"+src+".json").select(col, "upvote_ratio");
 
-        des.show();
         Dataset<Row> attr = des
                 .withColumn("label", functions.lit(src))
                 .withColumn("glo_score", functions.lit(df1.select(col).head().getLong(0)))
                 .withColumn("upvote_ratio", functions.lit(df1.select("upvote_ratio").head().getDouble(0)));
         attr.show();
-        return attr;
+        return attr.select("label", "mean", "stddev", "min", "max", "glo_score", "upvote_ratio");
     }
     public static void main(String[] args) throws IOException {
         String input = args[0], output = args[1];
@@ -45,18 +41,14 @@ public class score {
         score s1 = new score();
         String[] dir = s.findDir(input);
 
-        File file = new File(output);
-        FileOutputStream fos = new FileOutputStream(file);
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos));
-        String res;
+
+        Dataset<Row> res = s1.getValue(input, dir[0]);
         for (String d: dir) {
             if (d.equals("movie")) break;
-            res = s1.getValue(input, d).select("label", "mean", "stddev", "min", "max", "glo_score", "upvote_ratio").toJSON().toString();
-            System.out.println(res);
-            writer.write(res);
+            res = res.union(s1.getValue(input, d));
         }
-        writer.close();
-        fos.close();
+        res.write().mode(SaveMode.Append).json(output);
+
 
     }
 

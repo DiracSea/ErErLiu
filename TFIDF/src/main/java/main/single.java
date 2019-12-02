@@ -1,36 +1,27 @@
 package main;
 
-import java.io.*;
-import java.util.Arrays;
-
-import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.ForeachFunction;
-import org.apache.spark.api.java.function.Function;
-import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.ml.feature.*;
 import org.apache.spark.ml.linalg.BLAS;
 import org.apache.spark.ml.linalg.Vector;
 import org.apache.spark.ml.linalg.Vectors;
 import org.apache.spark.sql.*;
-import org.apache.spark.sql.api.java.UDF1;
-import org.apache.spark.sql.expressions.Window;
-import scala.Tuple2;
-import static org.apache.spark.sql.functions.*;
 
-import scala.collection.Seq;
+import java.io.*;
+import java.util.Arrays;
+
+import static org.apache.spark.sql.functions.*;
 
 
 public class single {
     private static SparkSession spark = null;
-/*    private static JavaSparkContext sc = null;
+    private static JavaSparkContext sc = null;
     public static JavaSparkContext initContext(){
         if (sc == null)
-            sc = new JavaSparkContext(new SparkConf());
+            sc = new JavaSparkContext(initSpark().sparkContext());
         return sc;
-    }*/
+    }
 
     public static SparkSession initSpark() {
         if (spark == null) {
@@ -47,6 +38,7 @@ public class single {
 
         Dataset<Row> df = spark.read()
                 .json(path+"/"+src+"/COMMENTS_"+src+".json")
+                .filter("score > 10")
                 .select("body").limit(1);
         Dataset<Row> new_df = df
                 .withColumn("body", functions.regexp_replace(df.col("body"),"[^a-zA-Z.'?!]+"," "));
@@ -58,7 +50,6 @@ public class single {
                 .filter("body != '\\s+deleted'")
                 .filter("body != 'deleted'")
                 .filter("body != ''");
-        new_df2.collect();
         new_df2.show(5);
 
         Tokenizer tokenizer = new Tokenizer()
@@ -113,7 +104,7 @@ public class single {
     public static Dataset<Row> initTwitter(String path) {
         SparkSession spark = initSpark();
 
-        JavaSparkContext sc = new JavaSparkContext(spark.sparkContext());
+        JavaSparkContext sc = initContext();
         JavaRDD<String> in = sc.textFile(path);
 
         JavaRDD<TW> table = in
@@ -320,6 +311,7 @@ public class single {
     public static void main(String[] args) throws IOException {
         String input = args[0], output = args[1], tw = args[2], output1 = args[3];
 
+
         // similarDataset(getValue(input, tw));
         File file = new File(output);
         FileOutputStream fos = new FileOutputStream(file);
@@ -328,24 +320,18 @@ public class single {
         Dataset<Row> res = getValue(input, tw);
         Dataset<Row> tmp = res;
 
-        Dataset<String> res1 = res.toJSON();
-        res1.foreach(row -> writer.write(row));
-        writer.close();
-        fos.close();
+        res.write().mode(SaveMode.Append).json(output);
 
-        File file1 = new File(output1);
-        FileOutputStream fos1 = new FileOutputStream(file1);
-        BufferedWriter writer1 = new BufferedWriter(new OutputStreamWriter(fos1));
+        Dataset<Row> sim = similarDataset(tmp);
 
-        Dataset<String> sim = similarDataset(tmp).toJSON();
-        sim.foreach(row -> writer.write(row));
-        writer1.close();
-        fos1.close();
+        sim.write().mode(SaveMode.Append).json(output1);
+
 /*        boolean append = true;
         boolean autoFlush = true;
         String charset = "UTF-8";
         String filePath = output;
         String tmp;*/
+
 
     }
 }
