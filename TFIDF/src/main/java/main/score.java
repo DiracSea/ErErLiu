@@ -19,7 +19,7 @@ public class score {
         }
         return spark;
     }
-    public String getValue(String path, String src) {
+    public static String getValue(String path, String src) {
         String col = "score";
         SparkSession spark = initSpark();
         Dataset<Row> df = spark.read().json(path+"/"+src+"/COMMENTS_"+src+".json").select(col);
@@ -36,7 +36,7 @@ public class score {
     public static void main(String[] args) throws IOException {
         String input = args[0], output = args[1];
         single s = new single();
-        score s1 = new score();
+
         String[] dir = s.findDir(input);
 
         File file = new File(output);
@@ -46,11 +46,11 @@ public class score {
         String res;
         for (String d: dir) {
             if (d.equals("movie")) break;
-            res = s1.getValue(input, d);
+            res = getValue(input, d);
             System.out.println(res);
             pw.write(res);
         }
-        pw.close(); 
+        pw.close();
         writer.close();
         fos.close();
 
