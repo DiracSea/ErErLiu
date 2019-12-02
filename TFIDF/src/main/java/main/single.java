@@ -35,7 +35,7 @@ public class single {
         return spark;
     }
 
-    public static Dataset<Row> initReddit(String path, String src) {
+    public Dataset<Row> initReddit(String path, String src) {
         SparkSession spark = initSpark();
 
         Dataset<Row> df = spark.read()
@@ -103,7 +103,7 @@ public class single {
         }
     }
 
-    public static Dataset<Row> initTwitter(String path) {
+    public Dataset<Row> initTwitter(String path) {
         SparkSession spark = initSpark();
 
         JavaSparkContext sc = initContext();
@@ -150,20 +150,20 @@ public class single {
         single s = new single();
         String[] dir = s.findDir(path);
 
-        Dataset<Row> tmp = initReddit(path, dir[0]);
-        tmp.withColumn("label", when(col("label").equalTo("Reddit"), "X")).limit(1);
+        Dataset<Row> tmp = s.initReddit(path, dir[0]);
+        tmp.limit(1).withColumn("label", when(col("label").equalTo("Reddit"), "X"));
         Dataset<Row> reddit1;
 
         int i = 0;
         for (String d : dir) {
             i += 1;
             if (d.equals("movie") || i > 10) break;
-            reddit1 = initReddit(path, d);
+            reddit1 = s.initReddit(path, d);
 
             tmp = tmp.union(reddit1);
         }
         tmp = tmp.filter("label != X");
-        Dataset<Row> twitter = initTwitter(tw);
+        Dataset<Row> twitter = s.initTwitter(tw);
         Dataset<Row> df = twitter.union(tmp);
 
 /*        CountVectorizerModel cv = new CountVectorizer()

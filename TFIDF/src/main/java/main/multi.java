@@ -70,20 +70,20 @@ public class multi {
         single s = new single();
         String[] dir = s.findDir(path);
 
-        Dataset<Row> tmp = initReddit(path, dir[0]);
-        tmp.withColumn("label", when(col("label").equalTo("Reddit"), "X")).limit(1);
+        Dataset<Row> tmp = s.initReddit(path, dir[0]);
+        tmp.limit(1).withColumn("label", when(col("label").equalTo("Reddit"), "X"));
         Dataset<Row> reddit1;
 
         int i = 0;
         for (String d : dir) {
             i += 1;
             if (d.equals("movie") || i > 10) break;
-            reddit1 = initReddit(path, d);
+            reddit1 = s.initReddit(path, d);
 
             tmp = tmp.union(reddit1);
         }
         tmp = tmp.filter("label != X");
-        Dataset<Row> twitter = initTwitter(tw);
+        Dataset<Row> twitter = s.initTwitter(tw);
         Dataset<Row> df = twitter.union(tmp);
 
 
