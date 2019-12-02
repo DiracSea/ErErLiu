@@ -94,7 +94,7 @@ public class multi {
         SparkSession spark = initSpark();
         Dataset<Row> df = getValue(path, in, d);
         int num;
-        if (fil.equals("Twitter"))
+        if (fil.equals("'Twitter'"))
             num = 2000;
         else
             num = 20;
@@ -156,11 +156,11 @@ public class multi {
 
         for (String d : dir) {
             if (d.equals("movie")) break;
-            JavaRDD<String> df = slice(input, tw,d, "Reddit").toJSON().toJavaRDD();
+            JavaRDD<String> df = slice(input, tw,d, "'Reddit'").toJSON().toJavaRDD();
 
             df.saveAsTextFile(output+"/"+d);
         }
-        JavaRDD<String> df = slice(input, tw, dir[-1], "Twitter").toJSON().toJavaRDD();
+        JavaRDD<String> df = slice(input, tw, dir[-1], "'Twitter'").toJSON().toJavaRDD();
 
         df.saveAsTextFile(output+"/T");
 
