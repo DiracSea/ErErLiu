@@ -42,7 +42,7 @@ public class single {
                 .json(path+"/"+src+"/COMMENTS_"+src+".json")
                 // .filter("score > 10")
                 .select("body", "score")
-                .orderBy(col("score").desc()).limit(2);
+                .orderBy(col("score").desc()).limit(10);
         Dataset<Row> new_df = df
                 .withColumn("body", functions.regexp_replace(df.col("body"),"[^a-zA-Z.'?!]+"," "));
         Dataset<Row> new_df1 = new_df
@@ -119,7 +119,7 @@ public class single {
                     return tw;
                 });
 
-        Dataset<Row> twDF = spark.createDataFrame(table, TW.class).limit(1000);
+        Dataset<Row> twDF = spark.createDataFrame(table, TW.class).limit(10000);
         // twDF.show(5);
 
         Tokenizer tokenizer = new Tokenizer()
@@ -136,7 +136,7 @@ public class single {
         // wordFiltered.show(5);
         return wordFiltered.select("label", "filtered");
     }
-    public Dataset<Row> getValue(String path, String tw) {
+    public Dataset<Row> getValue(String path, String tw, String d) {
 
         SparkSession spark = initSpark();
 /*        StructType schema = DataTypes.createStructType(new StructField[] {
@@ -146,21 +146,17 @@ public class single {
 
 
         single s = new single();
-        String[] dir = s.findDir(path);
+//        String[] dir = s.findDir(path);
+//
+//        Dataset<Row> tmp = s.initReddit(path, dir[0])
+//                .limit(1).withColumn("label", when(col("label").equalTo("Reddit"), "X"));
+//        Dataset<Row> reddit1;
 
-        Dataset<Row> tmp = s.initReddit(path, dir[0])
-                .limit(1).withColumn("label", when(col("label").equalTo("Reddit"), "X"));
-        Dataset<Row> reddit1;
 
+        Dataset<Row> reddit = s.initReddit(path, d);
 
-        for (String d : dir) {
-            if (d.equals("movie")) break;
-            reddit1 = s.initReddit(path, d);
-
-            tmp = tmp.union(reddit1);
-        }
         Dataset<Row> twitter = s.initTwitter(tw);
-        Dataset<Row> df = twitter.union(tmp);
+        Dataset<Row> df = twitter.union(reddit);
 
 /*        CountVectorizerModel cv = new CountVectorizer()
                 .setInputCol("filtered")
@@ -311,10 +307,14 @@ public class single {
 
         // System.out.println(res.toString());
         res.saveAsTextFile(output);*/
+        String[] dir = s.findDir(input);
 
-        JavaRDD<String> res1 = similarDataset(s.getValue(input, tw)).toJSON().toJavaRDD();
+        for (String d : dir) {
+            if (d.equals("movie")) break;
+            JavaRDD<String> res1 = similarDataset(s.getValue(input, tw, d)).toJSON().toJavaRDD();
+            res1.saveAsTextFile(output1+"/"+d);
+        }
 
-        res1.saveAsTextFile(output1);
 
     }
 }

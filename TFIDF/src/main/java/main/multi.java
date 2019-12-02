@@ -57,25 +57,14 @@ public class multi {
         }
     }
 
-    public static Dataset<Row> getValue(String path, String tw) {
+    public static Dataset<Row> getValue(String path, String tw, String d) {
 
         SparkSession spark = initSpark();
 
         single s = new single();
-        String[] dir = s.findDir(path);
-
-        Dataset<Row> tmp = s.initReddit(path, dir[0])
-                .limit(1).withColumn("label", when(col("label").equalTo("Reddit"), "X"));
-        Dataset<Row> reddit1;
-
-        for (String d : dir) {
-            if (d.equals("movie")) break;
-            reddit1 = s.initReddit(path, d);
-
-            tmp = tmp.union(reddit1);
-        }
+        Dataset<Row> reddit = s.initReddit(path, d);
         Dataset<Row> twitter = s.initTwitter(tw);
-        Dataset<Row> df = twitter.union(tmp);
+        Dataset<Row> df = twitter.union(reddit);
 
 
         HashingTF hashingTF = new HashingTF()
@@ -101,9 +90,9 @@ public class multi {
         return rescaledData.select("label", "filtered", "features");
     }
 
-    public static Dataset<Row> slice(String path, String in){
+    public static Dataset<Row> slice(String path, String in, String d){
         SparkSession spark = initSpark();
-        Dataset<Row> df = getValue(path, in);
+        Dataset<Row> df = getValue(path, in, d);
 
         JavaRDD<KeyWords> key1 = df
                 .select("label", "filtered", "features")
@@ -156,9 +145,16 @@ public class multi {
 
     public static void main(String[] args) throws IOException {
         String input = args[0], output = args[1], tw = args[2], output1 = args[3];
-        JavaRDD<String> df = slice(input, tw).toJSON().toJavaRDD();
 
-        df.saveAsTextFile(output);
+        single s = new single();
+        String[] dir = s.findDir(input);
+
+        for (String d : dir) {
+            if (d.equals("movie")) break;
+            JavaRDD<String> df = slice(input, tw,d).toJSON().toJavaRDD();
+
+            df.saveAsTextFile(output+"/"+d);
+        }
     }
 
 }
