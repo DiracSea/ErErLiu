@@ -42,7 +42,7 @@ public class single {
                 .json(path+"/"+src+"/COMMENTS_"+src+".json")
                 // .filter("score > 10")
                 .select("body", "score")
-                .orderBy(col("score").desc()).limit(5);
+                .orderBy(col("score").desc()).limit(2);
         Dataset<Row> new_df = df
                 .withColumn("body", functions.regexp_replace(df.col("body"),"[^a-zA-Z.'?!]+"," "));
         Dataset<Row> new_df1 = new_df
@@ -119,7 +119,7 @@ public class single {
                     return tw;
                 });
 
-        Dataset<Row> twDF = spark.createDataFrame(table, TW.class).limit(2000);
+        Dataset<Row> twDF = spark.createDataFrame(table, TW.class).limit(1000);
         // twDF.show(5);
 
         Tokenizer tokenizer = new Tokenizer()

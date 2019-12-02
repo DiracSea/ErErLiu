@@ -22,7 +22,7 @@ public class Stat {
             tmp = spark.read().json(m+"/"+d+"/part-00000");
             df = df.union(tmp);
         }
-        
+
 
     }
 }
