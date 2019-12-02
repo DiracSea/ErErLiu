@@ -148,7 +148,7 @@ public class multi {
         };*/
 
         Dataset<Row> mean = keyword
-                .groupBy(col("key")).agg(first("label"), avg("value").as("value"));
+                .groupBy(col("key")).agg(first("label").as("label"), avg("value").as("value"));
         Dataset<Row> rank = mean
                 .withColumn("rank", rank().over(Window.partitionBy("label").orderBy(col("value").desc())))
                 .filter("rank <= 500")
