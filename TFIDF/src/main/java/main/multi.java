@@ -24,11 +24,20 @@ import static org.apache.spark.sql.functions.*;
 
 public class multi {
     public static class KeyWords implements Serializable {
+        private String label;
         private Object[] key;
         private double[] value;
 
         public Object[] getKey() {
             return key;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public void setLabel(String label) {
+            this.label = label;
         }
 
         public void setKey(Object[] key) {
@@ -117,14 +126,16 @@ public class multi {
                 .select("label", "filtered", "features")
                 .javaRDD()
                 .map(r -> {
-                        List<Object> fuckU = r.getList(0);
-                        Object[] label = fuckU.toArray();
+                        String label = r.getString(0);
+                        List<Object> fuckU = r.getList(1);
+                        Object[] ff = fuckU.toArray();
 
-                        Vector tmp = r.getAs(1);
+                        Vector tmp = r.getAs(2);
                         double[] value = tmp.toSparse().values();
 
                         KeyWords keyWords = new KeyWords();
-                        keyWords.setKey(label);
+                        keyWords.setLabel(label);
+                        keyWords.setKey(ff);
                         keyWords.setValue(value);
                         return keyWords;
                 });
