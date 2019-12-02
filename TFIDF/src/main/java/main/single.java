@@ -282,7 +282,7 @@ public class single {
         Dataset<Row> ds = ds1.select("label", "max", "min", "avg", "dev")
                 .union(ds2.select("label", "max", "min", "avg", "dev"));
         ds.show(5);*/
-        return sim;
+        return sim.filter("similarity > 0.0");
     }
 
     public String[] findDir (String path) {
