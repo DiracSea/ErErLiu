@@ -314,7 +314,7 @@ public class single {
 
         // similarDataset(getValue(input, tw));
 
-        Dataset<Row> res = getValue(input, tw);
+        JavaRDD<String> res = getValue(input, tw).toJSON().toJavaRDD();
 /*        Dataset<Row> tmp = res;
 
         res.write().mode(SaveMode.Append).format("org.apache.spark.sql.json").save(output);
@@ -341,9 +341,10 @@ public class single {
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos, "UTF-8"));
         PrintWriter pw = new PrintWriter(writer, true);
         String res1;
-        res1 = res.toJSON().toString();
+
+        res.saveAsTextFile(output);
         System.out.println(res);
-        pw.write(res1);
+        // pw.write(res1);
 
         pw.close();
         writer.close();
