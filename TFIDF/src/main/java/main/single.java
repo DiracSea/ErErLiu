@@ -41,7 +41,8 @@ public class single {
         Dataset<Row> df = spark.read()
                 .json(path+"/"+src+"/COMMENTS_"+src+".json")
                 .filter("score > 10")
-                .select("body");
+                .select("body", "score")
+                .orderBy(col("score").desc()).limit(25);
         Dataset<Row> new_df = df
                 .withColumn("body", functions.regexp_replace(df.col("body"),"[^a-zA-Z.'?!]+"," "));
         Dataset<Row> new_df1 = new_df
@@ -52,7 +53,7 @@ public class single {
                 .filter("body != '\\s+deleted'")
                 .filter("body != 'deleted'")
                 .filter("body != ''");
-        new_df2.show(5);
+        // new_df2.show(5);
 
         Tokenizer tokenizer = new Tokenizer()
                 .setInputCol("body")
@@ -66,7 +67,7 @@ public class single {
                 .transform(wordsData)
                 // .filter("filtered != null")
                 .withColumn("label", functions.lit("Reddit"));
-        wordFiltered.show(5);
+        // wordFiltered.show(5);
         return wordFiltered.select("label", "filtered");
     }
 
@@ -122,7 +123,7 @@ public class single {
                 });
 
         Dataset<Row> twDF = spark.createDataFrame(table, TW.class);
-        twDF.show(5);
+        // twDF.show(5);
 
         Tokenizer tokenizer = new Tokenizer()
                 .setInputCol("body")
@@ -135,7 +136,7 @@ public class single {
         Dataset<Row> wordFiltered = remover
                 .transform(wordsData);
                 // .filter("filtered != null");
-        wordFiltered.show(5);
+        // wordFiltered.show(5);
         return wordFiltered.select("label", "filtered");
     }
     public Dataset<Row> getValue(String path, String tw) {
@@ -178,7 +179,7 @@ public class single {
                 .setOutputCol("rawFeatures");
 
         Dataset<Row> featurizedData = hashingTF.transform(df);
-        featurizedData.show(5);
+        // featurizedData.show(5);
 
         // IDF is an Estimator which is fit on a dataset and produces an IDFModel
         IDF idf = new IDF()
@@ -240,7 +241,7 @@ public class single {
 //            }
 //        };
         Dataset<Row> jj = twitter.select("id", "features").join(reddit.select("id", "features"));
-        jj.show(10);
+        // jj.show(10);
 
         JavaRDD<SimilarText> similarTextDataset = jj.toJavaRDD()
                 .map(r -> {
@@ -268,7 +269,7 @@ public class single {
         );
         Dataset<Row> remain = sim.filter("value > 0");
         System.out.println("cosine");
-        remain.show(10);
+        // remain.show(10);
         // sim.select("label1", "label2", "similarity").createOrReplaceTempView("tmp");
 /*        .withColumn("rank",
                 functions.rank().over(Window.partitionBy("label1").orderBy("similarity")))*/
