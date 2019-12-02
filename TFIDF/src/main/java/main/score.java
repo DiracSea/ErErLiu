@@ -40,6 +40,9 @@ public class score {
         String[] dir = s.findDir(input);
 
         File file = new File(output);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
         FileOutputStream fos = new FileOutputStream(file);
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos));
         PrintWriter pw = new PrintWriter(writer);
