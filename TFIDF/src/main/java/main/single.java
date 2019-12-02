@@ -191,15 +191,15 @@ public class single {
     }
 
     public static class SimilarText implements Serializable {
-        private int label1;
-        private int label2;
+        private long label1;
+        private long label2;
         private double similarity;
 
-        public int getLabel1() {
+        public long getLabel1() {
             return label1;
         }
 
-        public int getLabel2() {
+        public long getLabel2() {
             return label2;
         }
 
@@ -207,11 +207,11 @@ public class single {
             return similarity;
         }
 
-        public void setLabel1(int label1) {
+        public void setLabel1(long label1) {
             this.label1 = label1;
         }
 
-        public void setLabel2(int label2) {
+        public void setLabel2(long label2) {
             this.label2 = label2;
         }
 
@@ -238,8 +238,8 @@ public class single {
 
         JavaRDD<SimilarText> similarTextDataset = jj.toJavaRDD()
                 .map(r -> {
-                        int label1 = r.getInt(0);
-                        int label2 = r.getInt(2);
+                        long label1 = r.getLong(0);
+                        long label2 = r.getLong(2);
 
                         Vector fTwitter = r.getAs(1);
                         Vector fR = r.getAs(3);
@@ -260,8 +260,8 @@ public class single {
                 similarTextDataset,
                 SimilarText.class
         );
-        Dataset<Row> remain = sim.filter("similarity > 0");
-        System.out.println("cosine");
+/*        Dataset<Row> remain = sim.filter("similarity > 0");
+        System.out.println("cosine");*/
         // remain.show(10);
         // sim.select("label1", "label2", "similarity").createOrReplaceTempView("tmp");
 /*        .withColumn("rank",
@@ -282,7 +282,7 @@ public class single {
         Dataset<Row> ds = ds1.select("label", "max", "min", "avg", "dev")
                 .union(ds2.select("label", "max", "min", "avg", "dev"));
         ds.show(5);*/
-        return remain;
+        return sim;
     }
 
     public String[] findDir (String path) {
