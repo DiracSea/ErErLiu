@@ -16,6 +16,7 @@ public class wordCloud {
     public static void main (String[] args) throws IOException {
 
     }
+
     public void bi() throws IOException {
         final FrequencyAnalyzer frequencyAnalyzer = new FrequencyAnalyzer();
         frequencyAnalyzer.setWordFrequenciesToReturn(750);

@@ -90,9 +90,14 @@ public class multi {
         return rescaledData.select("label", "filtered", "features");
     }
 
-    public static Dataset<Row> slice(String path, String in, String d){
+    public static Dataset<Row> slice(String path, String in, String d, String fil){
         SparkSession spark = initSpark();
         Dataset<Row> df = getValue(path, in, d);
+        int num;
+        if (fil.equals("Twitter"))
+            num = 2000;
+        else
+            num = 20;
 
         JavaRDD<KeyWords> key1 = df
                 .select("label", "filtered", "features")
@@ -135,10 +140,10 @@ public class multi {
         };*/
 
         Dataset<Row> mean = keyword
-                .groupBy(col("key")).agg(first("label").as("label"), avg("value").as("value"));
+                .groupBy(col("key")).agg(first("label").as("label"), sum("value").as("value"));
         Dataset<Row> rank = mean
                 .withColumn("rank", rank().over(Window.partitionBy("label").orderBy(col("value").desc())))
-                .filter("rank <= 500")
+                .filter("rank <= "+num).filter("label ="+fil)
                 .drop("rank");
         return rank.select("label", "key", "value");
     }
@@ -151,10 +156,14 @@ public class multi {
 
         for (String d : dir) {
             if (d.equals("movie")) break;
-            JavaRDD<String> df = slice(input, tw,d).toJSON().toJavaRDD();
+            JavaRDD<String> df = slice(input, tw,d, "Reddit").toJSON().toJavaRDD();
 
             df.saveAsTextFile(output+"/"+d);
         }
+        JavaRDD<String> df = slice(input, tw, dir[-1], "Twitter").toJSON().toJavaRDD();
+
+        df.saveAsTextFile(output+"/T");
+
     }
 
 }
