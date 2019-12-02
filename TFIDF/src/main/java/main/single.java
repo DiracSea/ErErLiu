@@ -7,6 +7,8 @@ import org.apache.spark.ml.linalg.BLAS;
 import org.apache.spark.ml.linalg.Vector;
 import org.apache.spark.ml.linalg.Vectors;
 import org.apache.spark.sql.*;
+import org.apache.spark.sql.types.*;
+import scala.Tuple2;
 
 import java.io.*;
 import java.util.Arrays;
@@ -139,24 +141,30 @@ public class single {
     public static Dataset<Row> getValue(String path, String tw) {
 
         SparkSession spark = initSpark();
+/*        StructType schema = DataTypes.createStructType(new StructField[] {
+            new StructField("label", DataTypes.StringType, true, Metadata.empty()),
+                new StructField("filtered", new ArrayType(DataTypes.StringType, true), true, Metadata.empty())
+        });*/
+
 
         single s = new single();
+        String[] dir = s.findDir(path);
 
-        Dataset<Row> reddit = null;
+        Dataset<Row> tmp = initReddit(path, dir[0]);
+        tmp.withColumn("label", when(col("label").equalTo("Reddit"), "X")).limit(1);
         Dataset<Row> reddit1;
 
-        String[] dir = s.findDir(path);
         int i = 0;
         for (String d : dir) {
             i += 1;
             if (d.equals("movie") || i > 10) break;
             reddit1 = initReddit(path, d);
 
-            reddit = reddit.union(reddit1);
+            tmp = tmp.union(reddit1);
         }
-
+        tmp = tmp.filter("label != X");
         Dataset<Row> twitter = initTwitter(tw);
-        Dataset<Row> df = twitter.union(reddit);
+        Dataset<Row> df = twitter.union(tmp);
 
 /*        CountVectorizerModel cv = new CountVectorizer()
                 .setInputCol("filtered")
