@@ -30,8 +30,7 @@ public class score {
                         functions.max(col).alias("max"), functions.stddev(col).alias("stddev"));
         des.show();
         // Dataset<Row> df1 = spark.read().json(path+"/"+src+"/SUBMISSION_"+src+".json").select(col, "upvote_ratio");
-        return des.select( "mean", "stddev", "min", "max")
-                .toJSON().toString();
+        return des.select( "mean", "stddev", "min", "max").toString();
     }
     public static void main(String[] args) throws IOException {
         String input = args[0], output = args[1];
@@ -49,7 +48,7 @@ public class score {
             }
         }
         FileOutputStream fos = new FileOutputStream(file, true);
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos));
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos, "UTF-8"));
         PrintWriter pw = new PrintWriter(writer, true);
         String res;
         for (String d: dir) {
