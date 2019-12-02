@@ -148,12 +148,12 @@ public class multi {
         };*/
 
         Dataset<Row> mean = keyword
-                .groupBy(col("key")).agg(avg("value").alias("v"), col("label").alias("l"));
+                .groupBy(col("key")).agg(avg("value").alias("v"), first("label"));
         Dataset<Row> rank = mean
                 .withColumn("rank", rank().over(Window.partitionBy("label").orderBy(col("v").desc())))
                 .filter("rank <= 500")
                 .drop("rank");
-        return rank.select("l", "key", "v");
+        return rank.select("label", "key", "v");
     }
 
     public static void main(String[] args) throws IOException {
