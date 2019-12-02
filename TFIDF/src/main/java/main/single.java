@@ -41,7 +41,7 @@ public class single {
         Dataset<Row> df = spark.read()
                 .json(path+"/"+src+"/COMMENTS_"+src+".json")
                 .filter("score > 10")
-                .select("body");
+                .select("body").limit(1);
         Dataset<Row> new_df = df
                 .withColumn("body", functions.regexp_replace(df.col("body"),"[^a-zA-Z.'?!]+"," "));
         Dataset<Row> new_df1 = new_df
@@ -121,7 +121,7 @@ public class single {
                     return tw;
                 });
 
-        Dataset<Row> twDF = spark.createDataFrame(table, TW.class);
+        Dataset<Row> twDF = spark.createDataFrame(table, TW.class).limit(5);
         twDF.show(5);
 
         Tokenizer tokenizer = new Tokenizer()
@@ -154,10 +154,10 @@ public class single {
                 .limit(1).withColumn("label", when(col("label").equalTo("Reddit"), "X"));
         Dataset<Row> reddit1;
 
-
+        int i = 0;
         for (String d : dir) {
-
-            if (d.equals("movie")) break;
+            i += 1;
+            if (d.equals("movie") || i > 10) break;
             reddit1 = s.initReddit(path, d);
 
             tmp = tmp.union(reddit1);
@@ -325,12 +325,12 @@ public class single {
         Dataset<Row> init = getValue(input, tw);
         Dataset<Row> tmp = init;
 
-        JavaRDD<String> res = init.toJSON().toJavaRDD();
+/*        JavaRDD<String> res = init.toJSON().toJavaRDD();
 
         // System.out.println(res.toString());
-        res.saveAsTextFile(output);
+        res.saveAsTextFile(output);*/
 
-        JavaRDD<String> res1 = similarDataset(tmp).toJSON().toJavaRDD();
+        JavaRDD<String> res1 = similarDataset(tmp).coalesce(1).toJSON().toJavaRDD();
 
         res1.saveAsTextFile(output1);
 

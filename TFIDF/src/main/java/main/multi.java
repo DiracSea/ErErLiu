@@ -114,8 +114,7 @@ public class multi {
         Dataset<Row> df = getValue(path, in);
 
         JavaRDD<KeyWords> key1 = df
-                .filter("label = " + community)
-                .select("filtered", "features")
+                .select("label", "filtered", "features")
                 .javaRDD()
                 .map(r -> {
                         List<Object> fuckU = r.getList(0);
@@ -132,7 +131,7 @@ public class multi {
         Dataset<Row> key2 = spark.createDataFrame(
                 key1,
                 KeyWords.class
-        ).withColumn("id", monotonically_increasing_id());
+        ); // .withColumn("id", monotonically_increasing_id());
 
         UDF2 concatItems = new UDF2<Seq<Object>, Seq<Double>, Seq<String>>() {
             public Seq<String> call(final Seq<Object> col1, final Seq<Double> col2) throws Exception {
@@ -148,7 +147,7 @@ public class multi {
         };
         spark.udf().register("concatItems",concatItems, DataTypes.StringType);
         Dataset<KeyWord> df2 = key2
-                .select(col("id"),
+                .select(col("label"),
                         callUDF("concatItems", col("key"), col("value")).alias("key_value"))
                 .map(s -> {
                     String info = s.getList(1).toString();
