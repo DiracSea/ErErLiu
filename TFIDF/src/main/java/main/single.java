@@ -260,7 +260,7 @@ public class single {
                 similarTextDataset,
                 SimilarText.class
         );
-        Dataset<Row> remain = sim.filter("value > 0");
+        Dataset<Row> remain = sim.filter("similarity > 0");
         System.out.println("cosine");
         // remain.show(10);
         // sim.select("label1", "label2", "similarity").createOrReplaceTempView("tmp");

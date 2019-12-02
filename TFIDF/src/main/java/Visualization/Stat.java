@@ -15,6 +15,7 @@ public class Stat {
         Dataset<Row> tmp;
         int flag = 0;
         for (String d: dir) {
+            if (d.equals("movie")) continue;
             if (flag == 0) {
                 flag += 1;
                 continue;
