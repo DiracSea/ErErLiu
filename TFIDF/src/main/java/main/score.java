@@ -41,11 +41,16 @@ public class score {
 
         File file = new File(output);
         if (!file.exists()) {
-            file.mkdirs();
+            file.getParentFile().mkdir();
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        FileOutputStream fos = new FileOutputStream(file);
+        FileOutputStream fos = new FileOutputStream(file, true);
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos));
-        PrintWriter pw = new PrintWriter(writer);
+        PrintWriter pw = new PrintWriter(writer, true);
         String res;
         for (String d: dir) {
             if (d.equals("movie")) break;

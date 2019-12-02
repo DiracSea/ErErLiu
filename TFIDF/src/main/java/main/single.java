@@ -319,7 +319,12 @@ public class single {
         }
         file = new File(output1);
         if (!file.exists()) {
-            file.mkdirs();
+            file.getParentFile().mkdir();
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         Dataset<Row> res = getValue(input, tw);

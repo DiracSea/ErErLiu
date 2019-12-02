@@ -128,7 +128,12 @@ public class multi {
         Dataset<Row> df = slice(input, tw);
         File file = new File(output);
         if (!file.exists()) {
-            file.mkdirs();
+            file.getParentFile().mkdir();
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         df.write().mode(SaveMode.Append).format("org.apache.spark.sql.json").save(output);
 
