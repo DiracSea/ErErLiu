@@ -13,9 +13,9 @@ public class label {
         // Load and parse data
         JavaRDD<String> data = jsc.textFile(input);
         JavaRDD<String> res = data.map(s -> {
-            if (s.substring(0).equals('T'))
+            if (s.charAt(0)=='T')
                 return s.substring(9, s.length());
-            else
+            else if (s.charAt(0)=='r')
                 return s.substring(8, s.length());
         }).coalesce(1);
 
@@ -28,9 +28,9 @@ public class label {
         // Load and parse data
         JavaRDD<String> data = jsc.textFile(input);
         JavaRDD<String> res = data.map(s -> {
-            if (s.substring(0).equals('T'))
+            if (s.charAt(0) == 'T')
                 return s.substring(9, s.length())+",Twitter";
-            else
+            else if (s.charAt(0)=='r')
                 return s.substring(8, s.length())+",Reddit";
         }).coalesce(1);
 
