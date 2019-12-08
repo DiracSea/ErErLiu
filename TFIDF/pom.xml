@@ -34,6 +34,10 @@
             <name>Scala-Tools Maven2 Repository</name>
             <url>http://scala-tools.org/repo-releases</url>
         </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -45,6 +49,11 @@
     </pluginRepositories>
 
     <dependencies>
+        <dependency>
+            <groupId>com.github.lejon.T-SNE-Java</groupId>
+            <artifactId>tsne</artifactId>
+            <version>2.5.0</version>
+        </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
