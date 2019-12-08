@@ -13,10 +13,11 @@ public class label {
         // Load and parse data
         JavaRDD<String> data = jsc.textFile(input);
         JavaRDD<String> res = data.map(s -> {
+            int l = s.length();
             if (s.substring(0).equals("T"))
-                return s.substring(8, -1);
+                return s.substring(8, l);
             else
-                return s.substring(7, -1);
+                return s.substring(7, l);
         }).coalesce(1);
 
         res.saveAsTextFile(output);
@@ -28,10 +29,11 @@ public class label {
         // Load and parse data
         JavaRDD<String> data = jsc.textFile(input);
         JavaRDD<String> res = data.map(s -> {
+            int l = s.length();
             if (s.substring(0).equals("T"))
-                return s.substring(8, -1)+",Twitter";
+                return s.substring(8, l)+",Twitter";
             else
-                return s.substring(7, -1)+",Reddit";
+                return s.substring(7, l)+",Reddit";
         }).coalesce(1);
 
         res.saveAsTextFile(output);
