@@ -1,7 +1,5 @@
 package kmeans;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
+import java.io.*;
 
 public class result {
     public static void main(String[] args) {
@@ -9,32 +7,62 @@ public class result {
         int c = Integer.parseInt(cluster), best_i = 0;
         double res, best = Double.POSITIVE_INFINITY;
         kmeans k = new kmeans();
+        BufferedWriter bw = null;
+        FileWriter fw = null;
 
-        PrintWriter pw = null;
         try {
-            pw = new PrintWriter(new File(output));
-        } catch (FileNotFoundException e) {
+
+            String data = " This is new content";
+
+            File file = new File(output);
+
+            // if file doesnt exists, then create it
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+
+            // true = append file
+            fw = new FileWriter(file.getAbsoluteFile(), true);
+            bw = new BufferedWriter(fw);
+
+            for (int i = 1; i < c+1; i++) {
+                res = k.run_cost(input, i, 50);
+                if (res < best) {
+                    best = res;
+                    best_i = i;
+                }
+                bw.write(String.valueOf(i)+","+res+"\n");
+
+            }
+
+            System.out.println("Done==================================");
+
+        } catch (IOException e) {
+
             e.printStackTrace();
+
+        } finally {
+
+            try {
+
+                if (bw != null)
+                    bw.close();
+
+                if (fw != null)
+                    fw.close();
+
+            } catch (IOException ex) {
+
+                ex.printStackTrace();
+
+            }
         }
-        StringBuilder builder = new StringBuilder();
 //        String ColumnNamesList = "cluster number,iterate number,WSSSE";
 //// No need give the headers Like: id, Name on builder.append
 //        builder.append(ColumnNamesList + "\n");
-        for (int i = 1; i < c+1; i++) {
-            res = k.run_cost(input, i, 50);
-            if (res < best) {
-                best = res;
-                best_i = i;
-            builder.append(String.valueOf(i)+","+res+"\n");
-            pw.write(builder.toString());
-            }
-        }
-
-
-        pw.close();
-        System.out.println("done!");
 
         k.run_kmeans(input, best_i, 50, output1);
+        System.out.println("done!================================================");
 
     }
 }
