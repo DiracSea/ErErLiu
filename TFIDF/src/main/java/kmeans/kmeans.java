@@ -72,17 +72,7 @@ public class kmeans {
         private String value;
 
     }
-    public static class Line2 implements Serializable {
-        public int getLabel() {
-            return label;
-        }
 
-        public void setLabel(int label) {
-            this.label = label;
-        }
-
-        private int label;
-    }
 
     public void run_kmeans(String input, int num_cluster, int iter, String output) {
         SparkSession spark = initSC();
@@ -106,12 +96,23 @@ public class kmeans {
 
         // Evaluate clustering by computing Within Set Sum of Squared Errors
         JavaRDD<Integer> res = clusters.predict(parsedData);
-
+        JavaRDD<Line1> l1 = parsedData.map(s -> {
+            String value = s.toString();
+            Line1 line = new Line1();
+            line.setValue(value);
+            return line;
+        });
+        JavaRDD<Line1> l2 = res.map(s -> {
+            String label = s.toString();
+            Line1 line = new Line1();
+            line.setValue(label);
+            return line;
+        });
         Dataset<Row> df1 = spark
-                .createDataFrame(parsedData.map(s -> s.toArray().toString()), Line1.class)
+                .createDataFrame(l1, Line1.class)
                 .withColumn("id", functions.monotonically_increasing_id());
         Dataset<Row> df2 = spark
-                .createDataFrame(res, Line2.class)
+                .createDataFrame(l2, Line1.class)
                 .withColumn("id", functions.monotonically_increasing_id());
 
         Dataset<Row> df = df1
