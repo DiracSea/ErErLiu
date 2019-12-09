@@ -35,7 +35,7 @@ public class kmeans {
     }
     public double run_cost(String input, int num_cluster, int iter) {
         SparkSession spark = initSC();
-        JavaSparkContext jsc = initContext();
+        JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
         // Load and parse data
         JavaRDD<String> data = jsc.textFile(input);
         JavaRDD<Vector> parsedData = data.map(s -> {
@@ -56,7 +56,7 @@ public class kmeans {
         // Evaluate clustering by computing Within Set Sum of Squared Errors
         double SE = clusters.computeCost(parsedData.rdd());
         // smallest is best
-        jsc.stop();
+//        jsc.stop();
 
         return SE;
     }
@@ -86,7 +86,7 @@ public class kmeans {
 
     public void run_kmeans(String input, int num_cluster, int iter, String output) {
         SparkSession spark = initSC();
-        JavaSparkContext jsc = initContext();
+        JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
         // Load and parse data
         JavaRDD<String> data = jsc.textFile(input);
         JavaRDD<Vector> parsedData = data.map(s -> {
@@ -122,6 +122,6 @@ public class kmeans {
 
         com.saveAsTextFile(output);
         // smallest is best
-        jsc.stop();
+//        jsc.stop();
     }
 }
