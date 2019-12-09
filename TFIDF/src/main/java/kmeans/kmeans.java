@@ -34,9 +34,9 @@ public class kmeans {
         JavaRDD<String> data = jsc.textFile(input);
         JavaRDD<Vector> parsedData = data.map(s -> {
             String[] sarray = s.split(" ");
-            double[] values = new double[sarray.length];
-            for (int i = 0; i < sarray.length; i++) {
-                values[i] = Double.parseDouble(sarray[i]);
+            double[] values = new double[sarray.length-1];
+            for (int i = 0; i < sarray.length-1; i++) {
+                values[i] = Double.parseDouble(sarray[i+1]);
             }
             return Vectors.dense(values);
         });
