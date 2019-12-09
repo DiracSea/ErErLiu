@@ -18,6 +18,12 @@ import java.io.Serializable;
 
 public class kmeans {
     private static SparkSession spark = null;
+    private static JavaSparkContext sc = null;
+    public static JavaSparkContext initContext(){
+        if (sc == null)
+            sc = new JavaSparkContext(initSC().sparkContext());
+        return sc;
+    }
     public static SparkSession initSC() {
         if (spark == null) {
             spark = SparkSession
@@ -29,7 +35,7 @@ public class kmeans {
     }
     public double run_cost(String input, int num_cluster, int iter) {
         SparkSession spark = initSC();
-        JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
+        JavaSparkContext jsc = initContext();
         // Load and parse data
         JavaRDD<String> data = jsc.textFile(input);
         JavaRDD<Vector> parsedData = data.map(s -> {
@@ -80,7 +86,7 @@ public class kmeans {
 
     public void run_kmeans(String input, int num_cluster, int iter, String output) {
         SparkSession spark = initSC();
-        JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
+        JavaSparkContext jsc = initContext();
         // Load and parse data
         JavaRDD<String> data = jsc.textFile(input);
         JavaRDD<Vector> parsedData = data.map(s -> {

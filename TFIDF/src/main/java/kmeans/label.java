@@ -5,12 +5,13 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
 
+import static kmeans.kmeans.initContext;
 import static kmeans.kmeans.initSC;
 
 public class label {
     public void removeLabel(String input, String output) {
-        SparkSession conf = initSC();
-        JavaSparkContext jsc = new JavaSparkContext(conf.sparkContext());
+        SparkSession spark = initSC();
+        JavaSparkContext jsc = initContext();
         // Load and parse data
         JavaRDD<String> data = jsc.textFile(input);
         JavaRDD<String> res = data.map(s -> {
@@ -24,8 +25,8 @@ public class label {
     }
 
     public void setValue(String input, String output) {
-        SparkSession conf = initSC();
-        JavaSparkContext jsc = new JavaSparkContext(conf.sparkContext());
+        SparkSession spark = initSC();
+        JavaSparkContext jsc = initContext();
         // Load and parse data
         JavaRDD<String> data = jsc.textFile(input);
         JavaRDD<String> res = data.map(s -> {
