@@ -72,9 +72,10 @@ public class kmeans {
         KMeansModel clusters = KMeans.train(parsedData.rdd(), numClusters, numIterations);
 
         // Evaluate clustering by computing Within Set Sum of Squared Errors
-        JavaRDD<Integer> res = clusters.predict(parsedData).coalesce(1);
+        JavaRDD<Integer> res = clusters.predict(parsedData);
+        JavaRDD<String> com = cluster.union(res).coalesce(1);
 
-        res.saveAsTextFile(output);
+        com.saveAsTextFile(output);
         // smallest is best
         jsc.stop();
     }
