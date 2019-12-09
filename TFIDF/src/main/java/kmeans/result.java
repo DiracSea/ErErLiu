@@ -61,7 +61,7 @@ public class result {
 //// No need give the headers Like: id, Name on builder.append
 //        builder.append(ColumnNamesList + "\n");
 
-        k.run_kmeans(input, best_i, 50, output1);
+        k.run_kmeans(input, 5, 50, output1);
         System.out.println("done!================================================");
 
     }
