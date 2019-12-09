@@ -118,7 +118,7 @@ public class kmeans {
                 .join(df2,  df1.col("id").equalTo(df2.col("id")))
                 .drop("id");
 
-        JavaRDD<String> com = df.as(Encoders.STRING()).toJavaRDD().coalesce(1);
+        JavaRDD<Row> com = df.toJavaRDD().coalesce(1);
 
         com.saveAsTextFile(output);
         // smallest is best
