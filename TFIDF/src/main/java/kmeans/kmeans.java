@@ -108,7 +108,7 @@ public class kmeans {
         JavaRDD<Integer> res = clusters.predict(parsedData);
 
         Dataset<Row> df1 = spark
-                .createDataFrame(parsedData.map(s -> s.toString()), Line1.class)
+                .createDataFrame(parsedData.map(s -> s.toArray().toString()), Line1.class)
                 .withColumn("id", functions.monotonically_increasing_id());
         Dataset<Row> df2 = spark
                 .createDataFrame(res, Line2.class)
