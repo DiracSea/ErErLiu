@@ -25,7 +25,7 @@ public class result {
             fw = new FileWriter(file.getAbsoluteFile(), true);
             bw = new BufferedWriter(fw);
 
-            for (int i = 1; i < c+1; i++) {
+            for (int i = 4; i < c+1; i++) {
                 res = k.run_cost(input, i, 50);
                 if (res < best) {
                     best = res;
