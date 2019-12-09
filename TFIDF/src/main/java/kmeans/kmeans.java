@@ -1,13 +1,15 @@
 package kmeans;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.spark.SparkConf;
+import org.apache.spark.SparkSession;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.clustering.KMeansModel;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.clustering.KMeans;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -15,18 +17,19 @@ import java.io.IOException;
 
 
 public class kmeans {
-    private static SparkConf sc = null;
-    public static SparkConf initSC() {
+    private static SparkSession sc = null;
+    public static SparkSession initSC() {
         if (sc == null) {
-            sc = new SparkConf()
-                    .setAppName("ParallelizeKMeans")
-                    .setMaster("local");
+            sc = new SparkSession
+                    .builder()
+                    .appName("KMeans")
+                    .getOrCreate();
         }
         return sc;
     }
     public double run_cost(String input, int num_cluster, int iter) {
-        SparkConf conf = initSC();
-        JavaSparkContext jsc = new JavaSparkContext(conf);
+        SparkSession spark = initSC();
+        JavaSparkContext jsc = new JavaSparkContext(spark);
         // Load and parse data
         JavaRDD<String> data = jsc.textFile(input);
         JavaRDD<Vector> parsedData = data.map(s -> {
@@ -53,14 +56,15 @@ public class kmeans {
     }
 
     public void run_kmeans(String input, int num_cluster, int iter, String output) {
-        JavaSparkContext jsc = new JavaSparkContext(initSC());
+        SparkSession spark = initSC();
+        JavaSparkContext jsc = new JavaSparkContext(spark);
         // Load and parse data
         JavaRDD<String> data = jsc.textFile(input);
         JavaRDD<Vector> parsedData = data.map(s -> {
             String[] sarray = s.split(" ");
-            double[] values = new double[sarray.length];
-            for (int i = 0; i < sarray.length; i++) {
-                values[i] = Double.parseDouble(sarray[i]);
+            double[] values = new double[sarray.length-1];
+            for (int i = 0; i < sarray.length-1; i++) {
+                values[i] = Double.parseDouble(sarray[i+1]);
             }
             return Vectors.dense(values);
         });
@@ -73,7 +77,10 @@ public class kmeans {
 
         // Evaluate clustering by computing Within Set Sum of Squared Errors
         JavaRDD<Integer> res = clusters.predict(parsedData);
-        JavaRDD<String> com = cluster.union(res).coalesce(1);
+
+        Dataset<Row> df = parsedData.toDF("value");
+
+        JavaRDD<String> com = df.union(res.toDF("label")).toJavaRDD.coalesce(1);
 
         com.saveAsTextFile(output);
         // smallest is best
