@@ -14,6 +14,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 
 public class kmeans {
@@ -87,7 +89,7 @@ public class kmeans {
             }
             return Vectors.dense(values);
         });
-        parsedData.cache();
+//        parsedData.cache();
 
         // Cluster the data into three classes using KMeans
         int numClusters = num_cluster;
@@ -96,8 +98,12 @@ public class kmeans {
 
         // Evaluate clustering by computing Within Set Sum of Squared Errors
         JavaRDD<Integer> res = clusters.predict(parsedData);
+
         JavaRDD<Line1> l1 = parsedData.map(s -> {
-            String value = s.toString();
+            double[] d = s.toArray();
+            String value = Arrays.stream(d)
+                    .mapToObj(String::valueOf)
+                    .collect(Collectors.joining(","));;
             Line1 line = new Line1();
             line.setValue(value);
             return line;
@@ -118,6 +124,7 @@ public class kmeans {
         Dataset<Row> df = df1
                 .join(df2,  df1.col("id").equalTo(df2.col("id")))
                 .drop("id");
+        df.show(100);
 
         JavaRDD<String> com = df.toJavaRDD().map(s -> s.mkString(",")).coalesce(1);
 
