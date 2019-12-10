@@ -41,7 +41,7 @@ public class kmeans {
         // Load and parse data
         JavaRDD<String> data = jsc.textFile(input);
         JavaRDD<Vector> parsedData = data.map(s -> {
-            String[] sarray = s.split(" ");
+            String[] sarray = s.split(",");
             double[] values = new double[sarray.length-1];
             for (int i = 0; i < sarray.length-1; i++) {
                 values[i] = Double.parseDouble(sarray[i+1]);
@@ -82,14 +82,14 @@ public class kmeans {
         // Load and parse data
         JavaRDD<String> data = jsc.textFile(input);
         JavaRDD<Vector> parsedData = data.map(s -> {
-            String[] sarray = s.split(" ");
+            String[] sarray = s.split(",");
             double[] values = new double[sarray.length-1];
             for (int i = 0; i < sarray.length-1; i++) {
                 values[i] = Double.parseDouble(sarray[i+1]);
             }
             return Vectors.dense(values);
         });
-//        parsedData.cache();
+        parsedData.cache();
 
         // Cluster the data into three classes using KMeans
         int numClusters = num_cluster;
