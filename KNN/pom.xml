@@ -39,7 +39,7 @@
         <dependency><!-- hadoop -->
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
-            <version>3.2.1</version>
+            <version>3.2.4</version>
         </dependency>
         <dependency> <!-- mapreduce -->
             <groupId>org.apache.hadoop</groupId>
